@@ -31,10 +31,10 @@ function getMessage(a,b) {
     case 'object':
       if (typeA !== typeB) {
         var sum = getArraySum(a);
-        return 'Я прошел ' + sum + ' шагов';
+        return 'Я прошёл ' + sum + ' шагов';
       } else {
         var product = getArraysProduct(a,b);
-        return 'Я прошел ' + product + ' метров';
+        return 'Я прошёл ' + product + ' метров';
       }
       break;
     default:
