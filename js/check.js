@@ -28,7 +28,7 @@ function getMessage(a, b) {
       return 'Я прыгнул на ' + a * 100 + ' сантиметров';
       break;
     case (typeof a === 'boolean'):
-      if (a) {
+      if (a && b) {
         return 'Я попал в ' + b;
       } else {
         return 'Я никуда не попал';
