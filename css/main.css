@@ -465,3 +465,12 @@ input[type=radio]:checked + .review-mark-label {
   position: absolute;
   top: -1.5em;
 }
+
+.form-error {
+  margin-left: 10px;
+  color: red;
+}
+
+.hidden {
+  display: none;
+}
