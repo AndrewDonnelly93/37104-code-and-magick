@@ -1,25 +1,13 @@
-function getArraySum(a){
-  var sum = 0;
-  a.forEach(function(item) {
-    sum += item;
-  });
-  return sum;
-}
-
-function getArraysProduct(a, b) {
-  var product = 0;
-  a.forEach(function(item, i) {
-    product += item * b[i];
-  });
-  return product;
-}
-
 function getMessage(a, b) {
   if (Array.isArray(a) && Array.isArray(b)) {
-    var product = getArraysProduct(a, b);
+    var product = a.reduce(function(sum, item, i) {
+      return sum += item * b[i];
+    }, 0);
     return 'Я прошёл ' + product + ' метров';
   } else if (Array.isArray(a)) {
-    var sum = getArraySum(a);
+    var sum = a.reduce(function(sum, item) {
+      return sum += item;
+    });
     return 'Я прошёл ' + sum + ' шагов';
   } else if (typeof a === 'number') {
     return 'Я прыгнул на ' + a * 100 + ' сантиметров';
