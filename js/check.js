@@ -7,7 +7,7 @@ function getMessage(a, b) {
   } else if (Array.isArray(a)) {
     var sum = a.reduce(function(sum, item) {
       return sum += item;
-    });
+    }, 0);
     return 'Я прошёл ' + sum + ' шагов';
   } else if (typeof a === 'number') {
     return 'Я прыгнул на ' + a * 100 + ' сантиметров';
