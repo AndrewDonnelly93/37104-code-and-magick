@@ -15,27 +15,21 @@ function getArraysProduct(a, b) {
 }
 
 function getMessage(a, b) {
-  switch (true) {
-    case (Array.isArray(a) && Array.isArray(b)):
-      var product = getArraysProduct(a, b);
-      return 'Я прошёл ' + product + ' метров';
-      break;
-    case (Array.isArray(a)):
-      var sum = getArraySum(a);
-      return 'Я прошёл ' + sum + ' шагов';
-      break;
-    case (typeof a === 'number'):
-      return 'Я прыгнул на ' + a * 100 + ' сантиметров';
-      break;
-    case (typeof a === 'boolean'):
-      if (a && b) {
-        return 'Я попал в ' + b;
-      } else {
-        return 'Я никуда не попал';
-      }
-      break;
-    default:
-      return 'Я не знаю, что вы хотели сделать.';
-      break;
+  if (Array.isArray(a) && Array.isArray(b)) {
+    var product = getArraysProduct(a, b);
+    return 'Я прошёл ' + product + ' метров';
+  } else if (Array.isArray(a)) {
+    var sum = getArraySum(a);
+    return 'Я прошёл ' + sum + ' шагов';
+  } else if (typeof a === 'number') {
+    return 'Я прыгнул на ' + a * 100 + ' сантиметров';
+  } else if (typeof a === 'boolean') {
+    if (a && b) {
+      return 'Я попал в ' + b;
+    } else {
+      return 'Я никуда не попал';
+    }
+  } else {
+    return 'Я не знаю, что вы хотели сделать.';
   }
 }
