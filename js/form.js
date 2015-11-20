@@ -98,33 +98,29 @@
       };
       var currentMark = getCurrentMark();
       var result = 0;
-      switch (true) {
-        case (currentMark === 0):
-          // Оценка не поставлена, выводится сообщение о необходимости
-          // проставления оценки
-          this.createErrorNode('Поставьте оценку', radios[0]);
-          this.getSubmit().setAttribute('disabled', '');
-          break;
-        case (currentMark < 3):
-          // Удаление сообщения при непоставленной оценке
-          this.removeErrorNode(radios[0]);
-          // Поле 'отзыв' становится обязательным, если оно не заполнено,
-          // ставится disabled на submit
-          result = this.validReview(true);
-          break;
-        default:
-          // Используется для удаления осталось заполнить - отзыв,
-          // action - false, по умолчанию поле отзыв не обязательное
-          this.validReview(false);
-          // Если имя заполнено и оценка >= 3, то форму можно отправлять, удаляем disabled
-          if (this.validUsername()) {
-            this.getSubmit().removeAttribute('disabled');
-          }
-          // Удаляем ошибки от предыдуших вызовов, если они есть
-          this.removeErrorNode(this.getReview());
-          this.removeErrorNode(radios[0]);
-          result = 1;
-          break;
+      if (currentMark === 0) {
+        // Оценка не поставлена, выводится сообщение о необходимости
+        // проставления оценки
+        this.createErrorNode('Поставьте оценку', radios[0]);
+        this.getSubmit().setAttribute('disabled', '');
+      } else if (currentMark <= 2) {
+        // Удаление сообщения при непоставленной оценке
+        this.removeErrorNode(radios[0]);
+        // Поле 'отзыв' становится обязательным, если оно не заполнено,
+        // ставится disabled на submit
+        result = this.validReview(true);
+      } else {
+        // Используется для удаления осталось заполнить - отзыв,
+        // action - false, по умолчанию поле отзыв не обязательное
+        this.validReview(false);
+        // Если имя заполнено и оценка >= 3, то форму можно отправлять, удаляем disabled
+        if (this.validUsername()) {
+          this.getSubmit().removeAttribute('disabled');
+        }
+        // Удаляем ошибки от предыдуших вызовов, если они есть
+        this.removeErrorNode(this.getReview());
+        this.removeErrorNode(radios[0]);
+        result = 1;
       }
       return result;
     },
@@ -251,7 +247,7 @@
         // Если поле обязательно, запрещаем сабмит, выводим ошибку
         if (action) {
           this.getSubmit().setAttribute('disabled', '');
-          this.createErrorNode('Введите отзыв!', this.getReview());
+          this.createErrorNode('Отзыв обязателен при оценке < 3!', this.getReview());
         }
         // Вывод 'осталось заполнить - отзыв',
         // если оно скрыто
