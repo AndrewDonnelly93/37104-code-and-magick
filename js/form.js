@@ -34,7 +34,12 @@
     this.controlList = controlList;
     this.submit = submit;
     this.radios = radios;
-    this.username = username;
+    this.username = {
+      name: username,
+      // Проверка, был ли возвращен ранее false методом ValidUsername
+      // Применяется при взаимодействиях с кликами на радиокнопках
+      ifValidFails: false
+    };
     this.review = review;
   };
 
@@ -77,7 +82,25 @@
      * @return {Element} username
      */
     getUsername: function() {
-      return this.username;
+      return this.username.name;
+    },
+
+    /**
+     * Получение статуса неверного результата валидации
+     * имени пользователя
+     * @return {boolean} ifValidFails
+     */
+    getValidFails: function() {
+      return this.username.ifValidFails;
+    },
+
+    /**
+     * Устанавливается в true при false в результате валидации
+     * имени пользователя
+     * @param {boolean} status
+     */
+    setValidFails: function(status) {
+      this.username.ifValidFails = status;
     },
 
     /**
@@ -113,8 +136,18 @@
         // Используется для удаления осталось заполнить - отзыв,
         // action - false, по умолчанию поле отзыв не обязательное
         this.validReview(false);
-        // Если имя заполнено и оценка >= 3, то форму можно отправлять, удаляем disabled
-        if (this.validUsername()) {
+        // Проверка заполнения имени производится, если ранее вызов валидации
+        // имени пользоватля возвратил false
+        // Иначе нет смысла выводить предупреждение о необходимости ввести имя -
+        // пользователь или уже заполнил его, или еще не заполнял
+        if (this.getValidFails()) {
+          // Если имя заполнено и оценка >= 3, то форму можно отправлять, удаляем disabled
+          if (this.validUsername()) {
+            this.getSubmit().removeAttribute('disabled');
+          }
+        } else {
+          // Если пользователь корректно ввел имя или не взаимодействовал с инпутом,
+          // Удаляем disabled с сабмита
           this.getSubmit().removeAttribute('disabled');
         }
         // Удаляем ошибки от предыдуших вызовов, если они есть
@@ -158,22 +191,22 @@
       var currentControl = getCurrentControl();
       // Изменение статуса текущего элемента
       if (action) {
-        currentControl.classList.add('hidden');
+        currentControl.classList.add('invisible');
       } else {
-        currentControl.classList.remove('hidden');
+        currentControl.classList.remove('invisible');
       }
       // Проверка, совпадает ли число скрытых элементов с дочерними элементами контрольного листа
       // Получение числа скрытых элементов
-      var countHiddenElements = controlList.getElementsByClassName('hidden').length;
+      var countHiddenElements = controlList.getElementsByClassName('invisible').length;
       // Получение общего количества контролов
       var countAllControls = controlList.getElementsByClassName('review-fields-label').length;
       // Если true, то форма заполнена, все контролы скрыты, можно удалить disabled
       // с сабмита
       var isSubmitEnabled = (countHiddenElements === countAllControls);
       if (isSubmitEnabled) {
-        controlList.classList.add('hidden');
+        controlList.classList.add('invisible');
       } else {
-        controlList.classList.remove('hidden');
+        controlList.classList.remove('invisible');
       }
       // Удаление disabled из сабмита в случае заполнения формы
       if (isSubmitEnabled) {
@@ -221,6 +254,7 @@
     validUsername: function() {
       var currentField = 'username';
       if (!checkRequiredField(this.getUsername())) {
+        this.setValidFails(true);
         this.getSubmit().setAttribute('disabled', '');
          // Вывод 'осталось заполнить - имя',
          // если оно скрыто
@@ -229,6 +263,7 @@
         this.createErrorNode('Введите имя пользователя!', this.getUsername());
         return false;
       } else {
+        this.setValidFails(false);
         // Удаление 'осталось заполнить имя' (display: none)
         this.checkControlList(currentField, true);
         this.removeErrorNode(this.getUsername());
@@ -294,12 +329,11 @@
     reviewForm.getCurrentMark();
   };
 
-  var currentRadios = reviewForm.getRadios();
-  for (var i = 0; i < currentRadios.length; i++) {
-    currentRadios[i].onchange = function() {
+  Array.prototype.forEach.call(reviewForm.getRadios(), function(radio) {
+    radio.onchange = function() {
       reviewForm.getCurrentMark();
     };
-  }
+  });
 
   // На сабмит - проверка ввода имени пользователя
   // Проверка текущей оценки игры, при отсутствии заданной оценки просит задать
