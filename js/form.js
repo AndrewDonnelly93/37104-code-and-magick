@@ -1,3 +1,5 @@
+/* global docCookies: true */
+
 'use strict';
 
 (function() {
@@ -16,7 +18,22 @@
   };
 
   function checkRequiredField(element) {
-    return element.value.length ? true : false;
+    if (typeof element !== 'string') {
+      return element.value.length ? true : false;
+    } else {
+      return element.length ? true : false;
+    }
+  }
+
+  // Сохранение в cookies последних валидных значений оценки игры и
+  // имени пользователя
+  function setCookies(username, mark) {
+    var currentDate = new Date();
+    var birthdayDate = new Date(2015, 2, 14);
+    var timeToExpire = Math.ceil(+currentDate - +birthdayDate);
+    var dateToExpire = new Date(+currentDate + timeToExpire).toUTCString();
+    docCookies.setItem('username', username, dateToExpire);
+    docCookies.setItem('mark', mark, dateToExpire);
   }
 
   /**
@@ -42,10 +59,17 @@
       limit: 3
     };
     this.setSubmitDisabled(true);
+    if (docCookies.getItem('username')) {
+      this.setUsername(docCookies.getItem('username'));
+    }
+    if (docCookies.getItem('mark')) {
+      this.radios.buttons[docCookies.getItem('mark') - 1].checked = true;
+    };
     this.setCurrentMark();
   };
 
   Form.prototype = {
+
 
     /**
      * Получение формы
@@ -103,6 +127,14 @@
       return this.username;
     },
 
+    /**
+     * Установка имени пользователя
+     * @param {string} username
+     */
+    setUsername: function(username) {
+      this.username.value = username;
+    },
+
     getCurrentMark: function() {
       return this.radios.current;
     },
@@ -115,14 +147,16 @@
       // Если оценка меньше 3, поле отзыва становится обязательным
       // Если оно не заполнено, то ставим disabled на submit
       var radios = this.getRadios();
-      var getCurrentMarkFunction = function() {
+      var counter = 0;
+      // Если в cookies нет заданной радиокнопки
+      var getCurrentMarkFunction = function () {
         for (var i = 0; i < radios.length; i++) {
           if (radios[i].checked) {
             return radios[i].value;
           }
         }
         return 0;
-      };
+       };
       this.radios.current = getCurrentMarkFunction();
       // После установки текущей радиокнопки производится валидация полей
       this.formValidation();
@@ -253,7 +287,6 @@
      * Валидация ввода имени пользователя в форму
      */
     validUsername: function() {
-      console.log('n');
       var currentField = 'username';
       if (!checkRequiredField(this.getUsername())) {
         this.setSubmitDisabled(true);
@@ -298,6 +331,7 @@
         return true;
       }
     }
+
   };
 
   var form = document.querySelector('.review-form');
@@ -341,9 +375,9 @@
   reviewForm.form.onsubmit = function(e) {
     e.preventDefault();
     // Оценка задана, имя не пустое, отзыв обязателен при оценке меньше 3
-    if (reviewForm.formValidation()) {
-      // Валидация прошла успешно, форма отправляется на сервер
-      this.submit();
-    }
+    // Валидация прошла успешно, форма отправляется на сервер
+    setCookies(username.value, reviewForm.getCurrentMark());
+    this.submit();
   };
+
 })();
