@@ -64,7 +64,7 @@
     }
     if (docCookies.getItem('mark')) {
       this.radios.buttons[docCookies.getItem('mark') - 1].checked = true;
-    };
+    }
     this.setCurrentMark();
   };
 
@@ -147,16 +147,15 @@
       // Если оценка меньше 3, поле отзыва становится обязательным
       // Если оно не заполнено, то ставим disabled на submit
       var radios = this.getRadios();
-      var counter = 0;
       // Если в cookies нет заданной радиокнопки
-      var getCurrentMarkFunction = function () {
+      var getCurrentMarkFunction = function() {
         for (var i = 0; i < radios.length; i++) {
           if (radios[i].checked) {
             return radios[i].value;
           }
         }
         return 0;
-       };
+      };
       this.radios.current = getCurrentMarkFunction();
       // После установки текущей радиокнопки производится валидация полей
       this.formValidation();
