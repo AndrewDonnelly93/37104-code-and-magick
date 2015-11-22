@@ -33,14 +33,16 @@
     this.form = form;
     this.controlList = controlList;
     this.submit = submit;
-    this.radios = radios;
-    this.username = {
-      name: username,
-      // Проверка, был ли возвращен ранее false методом ValidUsername
-      // Применяется при взаимодействиях с кликами на радиокнопках
-      ifValidFails: false
-    };
+    this.username = username;
     this.review = review;
+    this.radios = {
+      buttons: radios,
+      current: 0,
+      // при этом значении ввод отзыва становится необязательным
+      limit: 3
+    };
+    this.setSubmitDisabled(true);
+    this.setCurrentMark();
   };
 
   Form.prototype = {
@@ -62,11 +64,27 @@
     },
 
     /**
+     * Получение границы обязательности ввода отзыва
+     * @return {number} limit
+     */
+    getLimitReview: function() {
+      return this.radios.limit;
+    },
+
+    /**
+     * Установка атрибута disabled у submit
+     * @param {boolean} disabled
+     */
+    setSubmitDisabled: function(disabled) {
+      this.getSubmit().disabled = disabled;
+    },
+
+    /**
      * Получение radio кнопок
      * @return {NodeList} radios
      */
     getRadios: function() {
-      return this.radios;
+      return this.radios.buttons;
     },
 
     /**
@@ -82,36 +100,22 @@
      * @return {Element} username
      */
     getUsername: function() {
-      return this.username.name;
+      return this.username;
+    },
+
+    getCurrentMark: function() {
+      return this.radios.current;
     },
 
     /**
-     * Получение статуса неверного результата валидации
-     * имени пользователя
-     * @return {boolean} ifValidFails
-     */
-    getValidFails: function() {
-      return this.username.ifValidFails;
-    },
-
-    /**
-     * Устанавливается в true при false в результате валидации
-     * имени пользователя
-     * @param {boolean} status
-     */
-    setValidFails: function(status) {
-      this.username.ifValidFails = status;
-    },
-
-    /**
-     * Проверка текущей оценки игры
+     * Установка текущей оценки игры
      * @return {number} mark
      */
-    getCurrentMark: function() {
+    setCurrentMark: function() {
       // Если оценка меньше 3, поле отзыва становится обязательным
       // Если оно не заполнено, то ставим disabled на submit
       var radios = this.getRadios();
-      var getCurrentMark = function() {
+      var getCurrentMarkFunction = function() {
         for (var i = 0; i < radios.length; i++) {
           if (radios[i].checked) {
             return radios[i].value;
@@ -119,41 +123,38 @@
         }
         return 0;
       };
-      var currentMark = getCurrentMark();
+      this.radios.current = getCurrentMarkFunction();
+      // После установки текущей радиокнопки производится валидация полей
+      this.formValidation();
+    },
+
+    // Валидация формы на основе текущей радиокнопки
+    formValidation: function() {
       var result = 0;
+      var currentMark = this.getCurrentMark();
+      var radios = this.getRadios();
       if (currentMark === 0) {
         // Оценка не поставлена, выводится сообщение о необходимости
         // проставления оценки
         this.createErrorNode('Поставьте оценку', radios[0]);
-        this.getSubmit().setAttribute('disabled', '');
-      } else if (currentMark <= 2) {
+        this.setSubmitDisabled(true);
+      } else if (currentMark <= (this.getLimitReview() - 1)) {
         // Удаление сообщения при непоставленной оценке
         this.removeErrorNode(radios[0]);
         // Поле 'отзыв' становится обязательным, если оно не заполнено,
-        // ставится disabled на submit
-        result = this.validReview(true);
+        // ставится disabled на submit (в методе validReview)
+        result = this.validReview(true) && this.validUsername();
       } else {
         // Используется для удаления осталось заполнить - отзыв,
         // action - false, по умолчанию поле отзыв не обязательное
-        this.validReview(false);
-        // Проверка заполнения имени производится, если ранее вызов валидации
-        // имени пользоватля возвратил false
-        // Иначе нет смысла выводить предупреждение о необходимости ввести имя -
-        // пользователь или уже заполнил его, или еще не заполнял
-        if (this.getValidFails()) {
+        result = this.validUsername() && this.validReview(false);
+        if (result) {
           // Если имя заполнено и оценка >= 3, то форму можно отправлять, удаляем disabled
-          if (this.validUsername()) {
-            this.getSubmit().removeAttribute('disabled');
-          }
-        } else {
-          // Если пользователь корректно ввел имя или не взаимодействовал с инпутом,
-          // Удаляем disabled с сабмита
-          this.getSubmit().removeAttribute('disabled');
+          this.setSubmitDisabled(false);
         }
-        // Удаляем ошибки от предыдуших вызовов, если они есть
+        // Удаляем ошибки от предыдущих вызовов, если они есть
         this.removeErrorNode(this.getReview());
         this.removeErrorNode(radios[0]);
-        result = 1;
       }
       return result;
     },
@@ -210,7 +211,7 @@
       }
       // Удаление disabled из сабмита в случае заполнения формы
       if (isSubmitEnabled) {
-        this.getSubmit().removeAttribute('disabled');
+        this.setSubmitDisabled(false);
       }
     },
 
@@ -252,10 +253,10 @@
      * Валидация ввода имени пользователя в форму
      */
     validUsername: function() {
+      console.log('n');
       var currentField = 'username';
       if (!checkRequiredField(this.getUsername())) {
-        this.setValidFails(true);
-        this.getSubmit().setAttribute('disabled', '');
+        this.setSubmitDisabled(true);
          // Вывод 'осталось заполнить - имя',
          // если оно скрыто
         this.checkControlList(currentField, false);
@@ -263,10 +264,12 @@
         this.createErrorNode('Введите имя пользователя!', this.getUsername());
         return false;
       } else {
-        this.setValidFails(false);
         // Удаление 'осталось заполнить имя' (display: none)
         this.checkControlList(currentField, true);
         this.removeErrorNode(this.getUsername());
+        if (this.getCurrentMark() >= this.getLimitReview()) {
+          this.setSubmitDisabled(false);
+        }
         return true;
       }
     },
@@ -281,7 +284,7 @@
       if (!checkRequiredField(this.getReview())) {
         // Если поле обязательно, запрещаем сабмит, выводим ошибку
         if (action) {
-          this.getSubmit().setAttribute('disabled', '');
+          this.setSubmitDisabled(true);
           this.createErrorNode('Отзыв обязателен при оценке < 3!', this.getReview());
         }
         // Вывод 'осталось заполнить - отзыв',
@@ -312,26 +315,24 @@
   var reviewForm = new Form(form, controlList, submit, radios, username, review);
 
   reviewForm.getUsername().onchange = function() {
-    // Имя не пустое
-    reviewForm.validUsername(this);
+    reviewForm.validUsername();
   };
 
   reviewForm.getUsername().oninput = function() {
-    // Имя не пустое
-    reviewForm.validUsername(this);
+    reviewForm.validUsername();
   };
 
   reviewForm.getReview().onchange = function() {
-    reviewForm.getCurrentMark();
+    reviewForm.formValidation();
   };
 
   reviewForm.getReview().oninput = function() {
-    reviewForm.getCurrentMark();
+    reviewForm.formValidation();
   };
 
   Array.prototype.forEach.call(reviewForm.getRadios(), function(radio) {
     radio.onchange = function() {
-      reviewForm.getCurrentMark();
+      reviewForm.setCurrentMark();
     };
   });
 
@@ -339,11 +340,8 @@
   // Проверка текущей оценки игры, при отсутствии заданной оценки просит задать
   reviewForm.form.onsubmit = function(e) {
     e.preventDefault();
-    // Имя не пустое
-    var validName = reviewForm.validUsername(username);
-    // Оценка задана
-    var validMarkAndReview = reviewForm.getCurrentMark();
-    if (validName && validMarkAndReview) {
+    // Оценка задана, имя не пустое, отзыв обязателен при оценке меньше 3
+    if (reviewForm.formValidation()) {
       // Валидация прошла успешно, форма отправляется на сервер
       this.submit();
     }
