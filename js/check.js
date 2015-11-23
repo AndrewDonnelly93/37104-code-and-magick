@@ -1,12 +1,12 @@
 function getMessage(a, b) {
   if (Array.isArray(a) && Array.isArray(b)) {
     var product = a.reduce(function(sum, item, i) {
-      return sum += item * b[i];
+      return sum + item * b[i];
     }, 0);
     return 'Я прошёл ' + product + ' метров';
   } else if (Array.isArray(a)) {
     var sum = a.reduce(function(sum, item) {
-      return sum += item;
+      return sum + item;
     }, 0);
     return 'Я прошёл ' + sum + ' шагов';
   } else if (typeof a === 'number') {
