@@ -375,23 +375,175 @@
     },
 
     /**
+     * Отрисовка на Canvas прямоугольника, в котором выведется статус игры.
+     * @param {number} coordX
+     * @param {number} coordY
+     * @param {number} offsetLine
+     * @param {number} rectangleWidth
+     * @param {number} rectangleHeight
+     * @param {string} color - fillStyle
+     * @private
+     */
+    _drawRectangleCanvas: function(coordX, coordY, offsetLine, rectangleWidth, rectangleHeight, color) {
+      this.ctx.fillStyle = color;
+      this.ctx.beginPath();
+      this.ctx.moveTo(coordX, coordY);
+      this.ctx.moveTo(coordX + offsetLine, coordY);
+      this.ctx.lineTo(coordX + rectangleWidth, coordY);
+      this.ctx.lineTo(coordX + rectangleWidth, coordY + rectangleHeight);
+      this.ctx.lineTo(coordX, coordY + rectangleHeight + offsetLine);
+      this.ctx.lineTo(coordX + offsetLine, coordY);
+      this.ctx.closePath();
+      this.ctx.fill();
+    },
+
+    /**
+     * Получение сообщения в виде массива из строк
+     * @param {string} msg
+     * @param {number} messageWidth
+     * @param {number} lineHeight
+     * @param {number} fontSize
+     * @param {string} fontFamily
+     * @private
+     */
+    _getMessageAsArrayOfStrings: function(msg, messageWidth, lineHeight, fontSize, fontFamily) {
+      var text = msg.split(' ');
+      var line = '';
+      this.ctx.font = fontSize + 'px ' + fontFamily;
+      var messageAsArray = {
+        message: [],
+        // Для последней линии, высота которой не добавится в цикле
+        messageHeight: lineHeight
+      };
+
+      for (var i = 0; i < text.length; i++) {
+        var testLine = line + text[i] + ' ';
+        var testWidth = this.ctx.measureText(testLine).width;
+        // Если длина строки с новым словом превышает установленную длину сообщения,
+        // строка сохраняется в массив без нового слова, с него начинается новая строка
+        if (testWidth > messageWidth) {
+          messageAsArray.message.push(line);
+          messageAsArray.messageHeight += lineHeight;
+          line = text[i] + ' ';
+        } else {
+          line = testLine;
+        }
+      }
+      // Добавление последней строки
+      messageAsArray.message.push(line.slice(0, line.length - 1));
+      messageAsArray.messageHeight = Math.ceil(messageAsArray.messageHeight);
+      return messageAsArray;
+    },
+
+    /**
+     * Вычисляется высота прямоугольника с собщением о статусе игры
+     * и его координата Y относительно высоты Canvas
+     * @param {object} messageHeight
+     * @param {number} verticalMessageOffset
+     * @param {number} offsetLine
+     * @private
+     */
+    _calculateRectangleData: function(messageHeight, verticalMessageOffset, offsetLine) {
+      var rectangleData = {
+        rectangleY: 0,
+        rectangleHeight: 0
+      };
+      rectangleData.rectangleHeight = verticalMessageOffset + messageHeight;
+      if ((this.canvas.height - rectangleData.rectangleHeight) > 0) {
+        rectangleData.rectangleY = 0.5 * (this.canvas.height - rectangleData.rectangleHeight - 0.5 * offsetLine);
+      }
+      return rectangleData;
+    },
+
+
+    /**
+     * Вывод сообщений в прямоугольник на Canvas.
+     * @param {object} msg
+     * @param {number} messageX
+     * @param {number} messageY
+     * @param {number} lineHeight
+     * @private
+     */
+    _printMessageOnScreen: function(msg, messageX, messageY, lineHeight) {
+      messageY += 0.5 * lineHeight;
+      for (var i = 0; i < msg.length; i++) {
+        this.ctx.fillText(msg[i], messageX, messageY);
+        messageY += lineHeight;
+      }
+    },
+
+    /**
+     * Отрисовка сообщений - статуса игры на Canvas.
+     * @param {string} msg
+     * @private
+     */
+    _drawMessageInCanvas: function(msg) {
+      var rectangleWidth = 320;
+
+      // Треугольник будет нарисован на 20 пикселей левее прямоугольника
+      // и на 20 пикселей ниже
+      var offsetLine = 20;
+
+      // Насколько ширина сообщения будет меньше ширины прямоугольника
+      var horizontalMessageOffset = 45;
+      var messageWidth = rectangleWidth - horizontalMessageOffset;
+
+      // Задание стиля для сообшения
+      var fontSize = 16;
+      var fontFamily = 'PT Mono';
+      var lineHeight = fontSize * 1.2;
+
+      // Получение сообщения в виде массива строк, подогнанных под ширину
+      // прямоугольника
+      var messageAsArray = this._getMessageAsArrayOfStrings(msg, messageWidth, lineHeight, fontSize, fontFamily);
+
+      // Вычисление высоты прямоугольника и координаты по оси Y
+      // Верхний отступ сообщения от границ прямоугольника
+      var verticalMessageOffset = 20;
+      var rectangleData = this._calculateRectangleData(messageAsArray.messageHeight, verticalMessageOffset, offsetLine);
+      var rectangleHeight = rectangleData.rectangleHeight;
+      var rectangleY = rectangleData.rectangleY;
+
+      // Отрисовка прямоугольника и его тени
+      var offsetRectangleShadow = 10;
+      var rectangleBg = '#fff';
+      var rectangleShadowBg = 'rgba(0, 0, 0, 0.7)';
+      // Координата начала фигуры (треугольника - дополнения к прямоугольнику и самого прямоугольника)
+      var rectangleX = 0.5 * (this.canvas.width - rectangleWidth - 0.5 * offsetLine);
+      // Рисуем тень прямоугольника
+      this._drawRectangleCanvas(rectangleX + offsetRectangleShadow, rectangleY + offsetRectangleShadow, offsetLine,
+        rectangleWidth, rectangleHeight, rectangleShadowBg);
+      // Рисуем сам прямоугольник
+      this._drawRectangleCanvas(rectangleX, rectangleY, offsetLine, rectangleWidth, rectangleHeight, rectangleBg);
+
+      // Вывод текста сообщения в прямоугольнике
+      var messageX = rectangleX + horizontalMessageOffset;
+      var messageY = rectangleY + verticalMessageOffset;
+      this.ctx.fillStyle = rectangleShadowBg;
+      this._printMessageOnScreen(messageAsArray.message, messageX, messageY, lineHeight);
+    },
+
+    /**
      * Отрисовка экрана паузы.
      */
     _drawPauseScreen: function() {
+      var msg;
       switch (this.state.currentStatus) {
         case Verdict.WIN:
-          console.log('you have won!');
+          msg = 'Вы победили в игре!';
           break;
         case Verdict.FAIL:
-          console.log('you have failed!');
+          msg = 'Вы проиграли. В следующий раз вам повезет больше.';
           break;
         case Verdict.PAUSE:
-          console.log('game is on pause!');
+          msg = 'Игра поставлена на паузу. Для возобновления нажмите пробел.';
           break;
         case Verdict.INTRO:
-          console.log('welcome to the game! Press Space to start');
+          msg = 'Нажмите пробел для начала игры. ' +
+          'Движение управляется стрелками, а для стрельбы файерболами используется SHIFT.';
           break;
       }
+      this._drawMessageInCanvas(msg);
     },
 
     /**
