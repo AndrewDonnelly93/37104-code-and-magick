@@ -1,18 +1,34 @@
 'use strict';
 
 (function() {
+
+  /**
+   * Убирает класс или добавляет его
+   * @param {boolean} action
+   * @param {Element} element
+   * @param {string} className
+  */
+  function toggleClass(action, element, className) {
+    if (action) {
+      element.className += ' ' + className;
+    } else {
+      element.className =
+        element.className.replace(new RegExp(' ' + className, 'g'), '');
+    }
+  }
+
   var formContainer = document.querySelector('.overlay-container');
   var formOpenButton = document.querySelector('.reviews-controls-new');
   var formCloseButton = document.querySelector('.review-form-close');
 
   formOpenButton.onclick = function(evt) {
     evt.preventDefault();
-    formContainer.classList.remove('invisible');
+    toggleClass(false, formContainer, 'invisible');
   };
 
   formCloseButton.onclick = function(evt) {
     evt.preventDefault();
-    formContainer.classList.add('invisible');
+    toggleClass(true, formContainer, 'invisible');
   };
 
   function checkRequiredField(element) {
@@ -114,16 +130,11 @@
     setCurrentMark: function() {
       // Если оценка меньше 3, поле отзыва становится обязательным
       // Если оно не заполнено, то ставим disabled на submit
-      var radios = this.getRadios();
-      var getCurrentMarkFunction = function() {
-        for (var i = 0; i < radios.length; i++) {
-          if (radios[i].checked) {
-            return radios[i].value;
-          }
+      for (var i = 0; i < this.getRadios().length; i++) {
+        if (this.getRadios()[i].checked) {
+          this.radios.current = this.getRadios()[i].value;
         }
-        return 0;
-      };
-      this.radios.current = getCurrentMarkFunction();
+      }
       // После установки текущей радиокнопки производится валидация полей
       this.formValidation();
     },
@@ -132,29 +143,28 @@
     formValidation: function() {
       var result = 0;
       var currentMark = this.getCurrentMark();
-      var radios = this.getRadios();
       if (currentMark === 0) {
         // Оценка не поставлена, выводится сообщение о необходимости
         // проставления оценки
-        this.createErrorNode('Поставьте оценку', radios[0]);
+        this.createErrorNode('Поставьте оценку', this.getRadios()[0]);
         this.setSubmitDisabled(true);
       } else if (currentMark <= (this.getLimitReview() - 1)) {
         // Удаление сообщения при непоставленной оценке
-        this.removeErrorNode(radios[0]);
+        this.removeErrorNode(this.getRadios()[0]);
         // Поле 'отзыв' становится обязательным, если оно не заполнено,
         // ставится disabled на submit (в методе validReview)
         result = this.validReview(true) && this.validUsername();
       } else {
         // Используется для удаления осталось заполнить - отзыв,
         // action - false, по умолчанию поле отзыв не обязательное
-        result = this.validUsername() && this.validReview(false);
+        result = this.validUsername();
         if (result) {
           // Если имя заполнено и оценка >= 3, то форму можно отправлять, удаляем disabled
           this.setSubmitDisabled(false);
         }
         // Удаляем ошибки от предыдущих вызовов, если они есть
         this.removeErrorNode(this.getReview());
-        this.removeErrorNode(radios[0]);
+        this.removeErrorNode(this.getRadios()[0]);
       }
       return result;
     },
@@ -179,23 +189,17 @@
        * Получение текущего контрола
        * @return {NodeList} control
        */
-      var getCurrentControl = function() {
-        switch (currentField) {
-          case 'username':
-            return controlList.getElementsByClassName('review-fields-name')[0];
-          case 'review':
-            return controlList.getElementsByClassName('review-fields-text')[0];
-          default:
-            break;
-        }
-      };
-      var currentControl = getCurrentControl();
-      // Изменение статуса текущего элемента
-      if (action) {
-        currentControl.classList.add('invisible');
-      } else {
-        currentControl.classList.remove('invisible');
+      var currentControl;
+      switch (currentField) {
+        case 'username':
+          currentControl = controlList.getElementsByClassName('review-fields-name')[0];
+          break;
+        case 'review':
+          currentControl = controlList.getElementsByClassName('review-fields-text')[0];
+          break;
       }
+      // Изменение статуса текущего элемента
+      toggleClass(action, currentControl, 'invisible');
       // Проверка, совпадает ли число скрытых элементов с дочерними элементами контрольного листа
       // Получение числа скрытых элементов
       var countHiddenElements = controlList.getElementsByClassName('invisible').length;
@@ -229,8 +233,7 @@
           if (children[i].tagName === 'LABEL') {
             var error = document.createElement('span');
             error.className = 'review-form-label form-error';
-            var node = document.createTextNode(errorMessage);
-            error.appendChild(node);
+            error.appendChild(document.createTextNode(errorMessage));
             parent.insertBefore(error, children[i].nextSibling);
             break;
           }
@@ -253,7 +256,6 @@
      * Валидация ввода имени пользователя в форму
      */
     validUsername: function() {
-      console.log('n');
       var currentField = 'username';
       if (!checkRequiredField(this.getUsername())) {
         this.setSubmitDisabled(true);
@@ -318,15 +320,7 @@
     reviewForm.validUsername();
   };
 
-  reviewForm.getUsername().oninput = function() {
-    reviewForm.validUsername();
-  };
-
   reviewForm.getReview().onchange = function() {
-    reviewForm.formValidation();
-  };
-
-  reviewForm.getReview().oninput = function() {
     reviewForm.formValidation();
   };
 
