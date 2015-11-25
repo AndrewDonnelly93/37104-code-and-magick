@@ -1,5 +1,7 @@
 'use strict';
 
+/* global reviews: true */
+
 (function() {
   /**
    * Убирает класс или добавляет его
