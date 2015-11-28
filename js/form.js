@@ -4,16 +4,16 @@
 
   /**
    * Убирает класс или добавляет его
-   * @param {boolean} action
    * @param {Element} element
    * @param {string} className
+   * @param {boolean} action
   */
-  function toggleClass(action, element, className) {
-    if (action) {
+  function toggleClass(element, className, action) {
+    if (action && element.className.indexOf(className) === -1) {
       element.className += ' ' + className;
-    } else {
+    } else if (!action) {
       element.className =
-        element.className.replace(new RegExp(' ' + className, 'g'), '');
+        element.className.replace(new RegExp('\s*' + className + '\s*', 'g'), '');
     }
   }
 
@@ -23,12 +23,12 @@
 
   formOpenButton.onclick = function(evt) {
     evt.preventDefault();
-    toggleClass(false, formContainer, 'invisible');
+    toggleClass(formContainer, 'invisible');
   };
 
   formCloseButton.onclick = function(evt) {
     evt.preventDefault();
-    toggleClass(true, formContainer, 'invisible');
+    toggleClass(formContainer, 'invisible');
   };
 
   function checkRequiredField(element) {
@@ -133,6 +133,7 @@
       for (var i = 0; i < this.getRadios().length; i++) {
         if (this.getRadios()[i].checked) {
           this.radios.current = this.getRadios()[i].value;
+          break;
         }
       }
       // После установки текущей радиокнопки производится валидация полей
@@ -143,14 +144,15 @@
     formValidation: function() {
       var result = 0;
       var currentMark = this.getCurrentMark();
+      var radio = this.getRadios()[0];
       if (currentMark === 0) {
         // Оценка не поставлена, выводится сообщение о необходимости
         // проставления оценки
-        this.createErrorNode('Поставьте оценку', this.getRadios()[0]);
+        this.createErrorNode('Поставьте оценку', radio);
         this.setSubmitDisabled(true);
       } else if (currentMark <= (this.getLimitReview() - 1)) {
         // Удаление сообщения при непоставленной оценке
-        this.removeErrorNode(this.getRadios()[0]);
+        this.removeErrorNode(radio);
         // Поле 'отзыв' становится обязательным, если оно не заполнено,
         // ставится disabled на submit (в методе validReview)
         result = this.validReview(true) && this.validUsername();
@@ -158,13 +160,15 @@
         // Используется для удаления осталось заполнить - отзыв,
         // action - false, по умолчанию поле отзыв не обязательное
         result = this.validUsername();
+        // Вызов валидации отзыва
+        this.validReview();
         if (result) {
           // Если имя заполнено и оценка >= 3, то форму можно отправлять, удаляем disabled
           this.setSubmitDisabled(false);
         }
         // Удаляем ошибки от предыдущих вызовов, если они есть
         this.removeErrorNode(this.getReview());
-        this.removeErrorNode(this.getRadios()[0]);
+        this.removeErrorNode(radio);
       }
       return result;
     },
@@ -185,10 +189,7 @@
      */
     checkControlList: function(currentField, action) {
       var controlList = this.getControlList();
-      /**
-       * Получение текущего контрола
-       * @return {NodeList} control
-       */
+      // Получение текущего контрола
       var currentControl;
       switch (currentField) {
         case 'username':
@@ -199,7 +200,7 @@
           break;
       }
       // Изменение статуса текущего элемента
-      toggleClass(action, currentControl, 'invisible');
+      toggleClass(currentControl, 'invisible', action);
       // Проверка, совпадает ли число скрытых элементов с дочерними элементами контрольного листа
       // Получение числа скрытых элементов
       var countHiddenElements = controlList.getElementsByClassName('invisible').length;
