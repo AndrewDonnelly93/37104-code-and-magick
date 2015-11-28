@@ -28,7 +28,7 @@
 
   formCloseButton.onclick = function(evt) {
     evt.preventDefault();
-    toggleClass(formContainer, 'invisible');
+    toggleClass(formContainer, 'invisible', true);
   };
 
   function checkRequiredField(element) {
@@ -210,13 +210,11 @@
       // с сабмита
       var isSubmitEnabled = (countHiddenElements === countAllControls);
       if (isSubmitEnabled) {
-        controlList.classList.add('invisible');
-      } else {
-        controlList.classList.remove('invisible');
-      }
-      // Удаление disabled из сабмита в случае заполнения формы
-      if (isSubmitEnabled) {
+        toggleClass(controlList, 'invisible', true);
+        // Удаление disabled из сабмита в случае заполнения формы
         this.setSubmitDisabled(false);
+      } else {
+        toggleClass(controlList, 'invisible');
       }
     },
 
