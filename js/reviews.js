@@ -1,7 +1,5 @@
 'use strict';
 
-/* global reviews: true */
-
 (function() {
   /**
    * Убирает класс или добавляет его
@@ -19,6 +17,20 @@
   }
 
   /**
+   * Получение данных по AJAX
+   * @param {Object} object объект, для которого будет вызвана callback
+   */
+  function getDataByAJAX(object) {
+    var xhr = new XMLHttpRequest();
+    xhr.onload = function(e) {
+      object.templateAndAppend(JSON.parse(e.target.response));
+    };
+    xhr.open('GET', 'data/reviews.json');
+    // Успешный xhr запрос
+    xhr.send();
+  }
+
+  /**
    * Конструктор
    * @param {Element} filter список фильтров
    * @param {Element} container контейнер для размещения списка отзывов
@@ -31,15 +43,16 @@
     toggleClass(true, this.filter, 'invisible');
     this.container = container;
     this.template = template;
-    this.reviews = reviews;
   };
 
   ReviewsList.prototype = {
     /**
      * Создает список отзывов: изначально в DocumentFragment,
      * после этого в DOM.
+     * @param {Object} reviews
      */
-    templateAndAppend: function() {
+    templateAndAppend: function(reviews) {
+      this.reviews = reviews;
       var template = this.template;
       var tempContainer = document.createDocumentFragment();
       for (var i = 0; i < this.reviews.length; i++) {
@@ -124,5 +137,5 @@
   var reviewList = new ReviewsList(document.querySelector('.reviews-filter'),
   document.querySelector('.reviews-list'), document.querySelector('#review-template'));
 
-  reviewList.templateAndAppend();
+  getDataByAJAX(reviewList);
 })();
