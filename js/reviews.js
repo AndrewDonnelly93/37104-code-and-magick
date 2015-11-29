@@ -265,9 +265,7 @@
         author.parentElement.querySelector('img').setAttribute('alt', authorName);
         author.parentElement.querySelector('img').setAttribute('title', authorName);
         authorImage.src = '';
-        if (author.parentElement.className.indexOf('review-load-failure') === -1) {
-          toggleClass(author.parentElement, 'review-load-failure', true);
-        }
+        toggleClass(author.parentElement, 'review-load-failure', true);
       };
 
       authorImage.src = imageSrc;
