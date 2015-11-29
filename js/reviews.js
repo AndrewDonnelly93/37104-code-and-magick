@@ -45,16 +45,16 @@
       var xhr = new XMLHttpRequest();
       xhr.open('GET', 'data/reviews.json');
       var self = this;
-      var REVIEWS_TIMEOUT = 15000;
+      xhr.timeout = 15000;
 
       /**
        * Обработка списка отзывов в случае зависания сервера
        * К reviews добавляется класс review-load-failure
        */
-      var reviewsLoadTimeout = setTimeout(function() {
+      xhr.ontimeout = function() {
         toggleClass(self.container, 'invisible', true);
         toggleClass(self.container.parentElement, 'review-load-failure', true);
-      }, REVIEWS_TIMEOUT);
+      };
 
       // Пока длится загрузка файла, к reviews добавлятся класс
       // reviews-list-loading
@@ -63,7 +63,6 @@
           toggleClass(self.container, 'invisible', true);
           toggleClass(self.container.parentElement, 'reviews-list-loading', true);
         } else if (xhr.readyState === 4 && xhr.status === 200) {
-          clearTimeout(reviewsLoadTimeout);
           toggleClass(self.container.parentElement, 'review-load-failure');
           toggleClass(self.container, 'invisible');
           toggleClass(self.container.parentElement, 'reviews-list-loading');
@@ -76,7 +75,6 @@
       };
 
       xhr.onload = function(e) {
-        clearTimeout(reviewsLoadTimeout);
         toggleClass(self.container, 'invisible');
         toggleClass(self.container.parentElement, 'review-load-failure');
         self.setReviews(JSON.parse(e.target.response));
