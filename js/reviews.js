@@ -53,6 +53,7 @@
        */
       xhr.ontimeout = function() {
         toggleClass(self.container, 'invisible', true);
+        toggleClass(self.container.parentElement, 'reviews-list-loading');
         toggleClass(self.container.parentElement, 'review-load-failure', true);
       };
 
@@ -62,20 +63,24 @@
         if (xhr.readyState < 4) {
           toggleClass(self.container, 'invisible', true);
           toggleClass(self.container.parentElement, 'reviews-list-loading', true);
-        } else if (xhr.readyState === 4 && xhr.status === 200) {
-          toggleClass(self.container.parentElement, 'review-load-failure');
-          toggleClass(self.container, 'invisible');
+        } else if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            toggleClass(self.container.parentElement, 'review-load-failure');
+            toggleClass(self.container, 'invisible');
+          }
           toggleClass(self.container.parentElement, 'reviews-list-loading');
         }
       };
 
       xhr.onerror = function() {
+        toggleClass(self.container.parentElement, 'reviews-list-loading');
         toggleClass(self.container, 'invisible', true);
         toggleClass(self.container.parentElement, 'review-load-failure', true);
       };
 
       xhr.onload = function(e) {
         toggleClass(self.container, 'invisible');
+        toggleClass(self.container.parentElement, 'reviews-list-loading');
         toggleClass(self.container.parentElement, 'review-load-failure');
         self.setReviews(JSON.parse(e.target.response));
       };
