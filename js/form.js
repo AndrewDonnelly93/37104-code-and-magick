@@ -45,7 +45,11 @@
   // имени пользователя
   function setCookies(username, mark) {
     var currentDate = new Date();
-    var birthdayDate = new Date(2015, 2, 14);
+    var currentYear = currentDate.getFullYear();
+    var birthdayDate = new Date(currentYear, 2, 14);
+    if (+currentDate - +birthdayDate < 0) {
+      birthdayDate = new Date(currentYear - 1, 2, 14);
+    }
     var timeToExpire = Math.ceil(+currentDate - +birthdayDate);
     var dateToExpire = new Date(+currentDate + timeToExpire).toUTCString();
     docCookies.setItem('username', username, dateToExpire);
@@ -291,10 +295,10 @@
       var currentField = 'username';
       if (!checkRequiredField(this.getUsername())) {
         this.setSubmitDisabled(true);
-         // Вывод 'осталось заполнить - имя',
-         // если оно скрыто
+        // Вывод 'осталось заполнить - имя',
+        // если оно скрыто
         this.checkControlList(currentField, false);
-         // Вывод сообщения с ошибкой
+        // Вывод сообщения с ошибкой
         this.createErrorNode('Введите имя пользователя!', this.getUsername());
         return false;
       } else {
@@ -353,15 +357,7 @@
     reviewForm.validUsername();
   };
 
-  reviewForm.getUsername().oninput = function() {
-    reviewForm.validUsername();
-  };
-
   reviewForm.getReview().onchange = function() {
-    reviewForm.formValidation();
-  };
-
-  reviewForm.getReview().oninput = function() {
     reviewForm.formValidation();
   };
 
