@@ -9,7 +9,7 @@
    * @param {Element} element
    * @param {string} className
    * @param {boolean=} action
-   */
+  */
 
   function toggleClass(element, className, action) {
     if (action && element.className.indexOf(className) === -1) {
