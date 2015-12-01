@@ -8,7 +8,7 @@
    * Убирает класс или добавляет его
    * @param {Element} element
    * @param {string} className
-   * @param {boolean} action
+   * @param {boolean=} action
   */
 
   function toggleClass(element, className, action) {
