@@ -470,7 +470,3 @@ input[type=radio]:checked + .review-mark-label {
   margin-left: 10px;
   color: red;
 }
-
-.hidden {
-  display: none;
-}
