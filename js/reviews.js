@@ -110,7 +110,7 @@
      */
     setCurrentFilter: function() {
       var self = this;
-      this.getFilters().parentElement.addEventListener('click', function(e) {
+      this.getFilters().addEventListener('click', function(e) {
         var clickedElement = e.target;
         if (clickedElement.className.indexOf('reviews-filter-item')) {
           self.setActiveFilter(clickedElement.id);
