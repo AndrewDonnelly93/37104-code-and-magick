@@ -9,7 +9,11 @@
    */
   function toggleClass(element, className, action) {
     if (action && element.className.indexOf(className) === -1) {
-      element.className += ' ' + className;
+      if (!element.className.length) {
+        element.className += className;
+      } else {
+        element.className += ' ' + className;
+      }
     } else if (!action) {
       element.className =
         element.className.replace(new RegExp('\s*' + className + '\s*', 'g'), '');
@@ -28,7 +32,6 @@
       all: filter,
       active: 'reviews-all'
     };
-    // Прячет список фильтров при инициализации списка отзывов
     toggleClass(this.filter.all, 'invisible', true);
     this.container = container;
     this.template = template;
@@ -199,8 +202,8 @@
       var template = this.template;
       var tempContainer = document.createDocumentFragment();
       this.container.innerHTML = '';
+      var reviewTemplate;
       for (var i = 0; i < reviews.length; i++) {
-        var reviewTemplate;
         // Свойство 'content' у шаблонов не работает в IE, поскольку он
         // не поддерживает template. Поэтому для IE пишется альтернативный
         // вариант.
@@ -251,7 +254,9 @@
        * Обработка изображения в случае успешной загрузки
        */
       authorImage.onload = function() {
-        clearTimeout(imageLoadTimeout);
+        if (imageLoadTimeout) {
+          clearTimeout(imageLoadTimeout);
+        }
         authorImage.width = IMAGE_SIZE;
         authorImage.height = IMAGE_SIZE;
         toggleClass(authorImage, 'review-author', true);
@@ -264,7 +269,9 @@
        * Обработка изображения в случае ошибки при загрузке
        */
       authorImage.onerror = function() {
-        clearTimeout(imageLoadTimeout);
+        if (imageLoadTimeout) {
+          clearTimeout(imageLoadTimeout);
+        }
         author.parentElement.querySelector('img').setAttribute('alt', authorName);
         author.parentElement.querySelector('img').setAttribute('title', authorName);
         authorImage.src = '';
