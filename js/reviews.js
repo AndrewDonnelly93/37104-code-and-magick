@@ -5,16 +5,20 @@
 (function() {
   /**
    * Убирает класс или добавляет его
-   * @param {boolean} action
    * @param {Element} element
    * @param {string} className
+   * @param {boolean=} action
    */
-  function toggleClass(action, element, className) {
-    if (action) {
-      element.className += ' ' + className;
-    } else {
+  function toggleClass(element, className, action) {
+    if (action && element.className.indexOf(className) === -1) {
+      if (!element.className.length) {
+        element.className += className;
+      } else {
+        element.className += ' ' + className;
+      }
+    } else if (!action) {
       element.className =
-        element.className.replace(new RegExp(' ' + className, 'g'), '');
+        element.className.replace(new RegExp('\s*' + className + '\s*', 'g'), '');
     }
   }
 
@@ -28,7 +32,7 @@
   var ReviewsList = function(filter, container, template) {
     this.filter = filter;
     // Прячет список фильтров при инициализации списка отзывов
-    toggleClass(true, this.filter, 'invisible');
+    toggleClass(this.filter, 'invisible', true);
     this.container = container;
     this.template = template;
     this.reviews = reviews;
@@ -42,8 +46,8 @@
     templateAndAppend: function() {
       var template = this.template;
       var tempContainer = document.createDocumentFragment();
+      var reviewTemplate;
       for (var i = 0; i < this.reviews.length; i++) {
-        var reviewTemplate;
         // Свойство 'content' у шаблонов не работает в IE, поскольку он
         // не поддерживает template. Поэтому для IE пишется альтернативный
         // вариант.
@@ -60,7 +64,7 @@
         // Добавление рейтинга
         for (var j = 0; j < this.reviews[i].rating; j++) {
           var star = document.createElement('span');
-          toggleClass(true, star, 'review-rating');
+          toggleClass(star, 'review-rating', true);
           reviewTemplate.insertBefore(star, reviewTemplate.querySelector('.review-text'));
         }
         reviewTemplate.querySelector('.review-text').textContent = this.reviews[i].description;
@@ -68,7 +72,7 @@
       }
       this.container.appendChild(tempContainer);
       // Показывает фильтры у отзывов после загрузки списка отзывов
-      toggleClass(false, this.filter, 'invisible');
+      toggleClass(this.filter, 'invisible');
     },
 
     /**
@@ -88,17 +92,18 @@
        */
       var imageLoadTimeout = setTimeout(function() {
         authorImage.src = '';
-        //toggleClass(true, author.parentElement, 'review-load-failure');
       }, IMAGE_TIMEOUT);
 
       /**
        * Обработка изображения в случае успешной загрузки
        */
       authorImage.onload = function() {
-        clearTimeout(imageLoadTimeout);
+        if (imageLoadTimeout) {
+          clearTimeout(imageLoadTimeout);
+        }
         authorImage.width = IMAGE_SIZE;
         authorImage.height = IMAGE_SIZE;
-        toggleClass(true, authorImage, 'review-author');
+        toggleClass(authorImage, 'review-author', true);
         authorImage.setAttribute('alt', authorName);
         authorImage.setAttribute('title', authorName);
         author.parentElement.replaceChild(authorImage, author.parentElement.querySelector('img'));
@@ -108,12 +113,14 @@
        * Обработка изображения в случае ошибки при загрузке
        */
       authorImage.onerror = function() {
-        clearTimeout(imageLoadTimeout);
+        if (imageLoadTimeout) {
+          clearTimeout(imageLoadTimeout);
+        }
         author.parentElement.querySelector('img').setAttribute('alt', authorName);
         author.parentElement.querySelector('img').setAttribute('title', authorName);
         authorImage.src = '';
         if (author.parentElement.className.indexOf('review-load-failure') === -1) {
-          toggleClass(true, author.parentElement, 'review-load-failure');
+          toggleClass(author.parentElement, 'review-load-failure', true);
         }
       };
 
