@@ -1,3 +1,5 @@
+/* global docCookies: true */
+
 'use strict';
 
 (function() {
@@ -6,7 +8,7 @@
    * Убирает класс или добавляет его
    * @param {Element} element
    * @param {string} className
-   * @param {boolean} action
+   * @param {boolean=} action
   */
   function toggleClass(element, className, action) {
     if (action && element.className.indexOf(className) === -1) {
@@ -32,7 +34,26 @@
   };
 
   function checkRequiredField(element) {
-    return element.value.length ? true : false;
+    if (typeof element !== 'string') {
+      return element.value.length ? true : false;
+    } else {
+      return element.length ? true : false;
+    }
+  }
+
+  // Сохранение в cookies последних валидных значений оценки игры и
+  // имени пользователя
+  function setCookies(username, mark) {
+    var currentDate = new Date();
+    var currentYear = currentDate.getFullYear();
+    var birthdayDate = new Date(currentYear, 2, 14);
+    if (+currentDate - +birthdayDate < 0) {
+      birthdayDate = new Date(currentYear - 1, 2, 14);
+    }
+    var timeToExpire = Math.ceil(+currentDate - +birthdayDate);
+    var dateToExpire = new Date(+currentDate + timeToExpire).toUTCString();
+    docCookies.setItem('username', username, dateToExpire);
+    docCookies.setItem('mark', mark, dateToExpire);
   }
 
   /**
@@ -58,10 +79,17 @@
       limit: 3
     };
     this.setSubmitDisabled(true);
+    if (docCookies.getItem('username')) {
+      this.setUsername(docCookies.getItem('username'));
+    }
+    if (docCookies.getItem('mark')) {
+      this.radios.buttons[docCookies.getItem('mark') - 1].checked = true;
+    }
     this.setCurrentMark();
   };
 
   Form.prototype = {
+
 
     /**
      * Получение формы
@@ -117,6 +145,14 @@
      */
     getUsername: function() {
       return this.username;
+    },
+
+    /**
+     * Установка имени пользователя
+     * @param {string} username
+     */
+    setUsername: function(username) {
+      this.username.value = username;
     },
 
     getCurrentMark: function() {
@@ -258,10 +294,10 @@
       var currentField = 'username';
       if (!checkRequiredField(this.getUsername())) {
         this.setSubmitDisabled(true);
-         // Вывод 'осталось заполнить - имя',
-         // если оно скрыто
+        // Вывод 'осталось заполнить - имя',
+        // если оно скрыто
         this.checkControlList(currentField, false);
-         // Вывод сообщения с ошибкой
+        // Вывод сообщения с ошибкой
         this.createErrorNode('Введите имя пользователя!', this.getUsername());
         return false;
       } else {
@@ -299,6 +335,7 @@
         return true;
       }
     }
+
   };
 
   var form = document.querySelector('.review-form');
@@ -334,9 +371,11 @@
   reviewForm.form.onsubmit = function(e) {
     e.preventDefault();
     // Оценка задана, имя не пустое, отзыв обязателен при оценке меньше 3
+    // Валидация прошла успешно, форма отправляется на сервер
     if (reviewForm.formValidation()) {
-      // Валидация прошла успешно, форма отправляется на сервер
+      setCookies(username.value, reviewForm.getCurrentMark());
       this.submit();
     }
   };
+
 })();
