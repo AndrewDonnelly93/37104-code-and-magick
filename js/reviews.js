@@ -25,17 +25,25 @@
    * @param {Element} filter список фильтров
    * @param {Element} container контейнер для размещения списка отзывов
    * @param {Element} template шаблон для отзыва
+   * @param {Element} more кнопка для показа следующей страницы отзывов
    * @constructor
    */
-  var ReviewsList = function(filter, container, template) {
+  var ReviewsList = function(filter, container, template, more) {
     this.filter = {
       all: filter,
       active: 'reviews-all'
     };
+    this.pages = {
+      current: 0,
+      PAGE_SIZE: 3
+    };
     toggleClass(this.filter.all, 'invisible', true);
     this.container = container;
     this.template = template;
+    this.more = more;
+    this.filteredReviews = [];
     this.getReviewsByAJAX();
+    this.showMoreReviews();
   };
 
   ReviewsList.prototype = {
@@ -103,6 +111,66 @@
     */
     getActiveFilter: function() {
       return this.filter.active;
+    },
+
+    /**
+     * Получение текущей страницы
+     */
+    getCurrentPage: function() {
+      return this.pages.current;
+    },
+
+    /**
+     * Получение количества отзывов на странице
+     */
+    getPageSize: function() {
+      return this.pages.PAGE_SIZE;
+    },
+
+    /**
+     * Получение списка отфильтрованных отзывов
+     */
+    getFilteredReviews: function() {
+      return this.filteredReviews;
+    },
+
+    /**
+     * Установка списка отфильтрованных отзывов
+     * @param {Array.<Object>} reviews
+     */
+    setFilteredReviews: function(reviews) {
+      this.filteredReviews = reviews;
+    },
+
+    /**
+     * Получение кнопки 'еще отзывы'
+     */
+    getMore: function() {
+      return this.more;
+    },
+
+    /**
+     * Установка обработчика событий по клику на кнопку 'еще отзывы'
+     */
+    showMoreReviews: function() {
+      var self = this;
+      this.getMore().addEventListener('click', function() {
+        var currentPage = self.getCurrentPage();
+        // Для отображения следующей порции отзывов нужно посмотреть, есть ли они
+        // Страницы нумеруются с 0, поэтому вычитаем из потолка единицу
+        if (currentPage < (Math.ceil(self.getFilteredReviews().length / self.getPageSize())) - 1) {
+          self.setCurrentPage(currentPage + 1);
+          self.templateAndAppend();
+        }
+      });
+    },
+
+    /**
+     * Установка текущей страницы
+     * @param {number} page
+     */
+    setCurrentPage: function(page) {
+      this.pages.current = page;
     },
 
     /**
@@ -189,19 +257,27 @@
         default:
           break;
       }
-      this.templateAndAppend(filteredReviews);
+      this.setCurrentPage(0);
+      this.setFilteredReviews(filteredReviews);
+      this.templateAndAppend(true);
       this.filter.active = id;
     },
 
     /**
      * Создает список отзывов: изначально в DocumentFragment,
      * после этого в DOM.
+     * @param {boolean=} replace При true очистка контейнера
      */
-    templateAndAppend: function(filteredReviews) {
-      var reviews = filteredReviews;
+    templateAndAppend: function(replace) {
       var template = this.template;
       var tempContainer = document.createDocumentFragment();
-      this.container.innerHTML = '';
+      if (replace) {
+        this.container.innerHTML = '';
+      }
+      var PAGE_SIZE = this.getPageSize();
+      var from = this.getCurrentPage() * PAGE_SIZE;
+      var to = from + PAGE_SIZE;
+      var reviews = this.getFilteredReviews().slice(from, to);
       var reviewTemplate;
       for (var i = 0; i < reviews.length; i++) {
         // Свойство 'content' у шаблонов не работает в IE, поскольку он
@@ -283,7 +359,8 @@
   };
 
   var reviewList = new ReviewsList(document.querySelector('.reviews-filter'),
-  document.querySelector('.reviews-list'), document.querySelector('#review-template'));
+  document.querySelector('.reviews-list'), document.querySelector('#review-template'),
+  document.querySelector('.reviews-controls-more'));
 
   reviewList.setCurrentFilter();
 
