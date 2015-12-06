@@ -16,7 +16,7 @@
       }
     } else if (!action) {
       element.className =
-        element.className.replace(new RegExp('\s*' + className + '\s*', 'g'), '');
+        element.className.replace(new RegExp('\s*\b' + className + '\b\s*', 'g'), '');
     }
   }
 
