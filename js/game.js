@@ -1,6 +1,36 @@
 'use strict';
 
 (function() {
+
+  /**
+  * Задает инициализацию скролла
+   */
+  function scrollDetecting() {
+    var scrollTimeout;
+    var SCROLL_TIMEOUT = 100;
+    var clouds = document.querySelector('.header-clouds');
+    var demo = document.querySelector('.demo');
+    var viewportHeight = window.innerHeight;
+    window.addEventListener('scroll', function() {
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(function() {
+        console.log(game.state.currentStatus);
+        // Если блок с игрой не виден в данный момент, то игра
+        // ставится на паузу
+        var demoCoords = demo.getBoundingClientRect();
+        if (!((demoCoords.top < viewportHeight) && (demoCoords.bottom >= 0))) {
+          game.setGameStatus(window.Game.Verdict.PAUSE);
+        }
+        // Координаты фона меняются только в том случае, если блок с облаками
+        // виден на странице
+        if (clouds.getBoundingClientRect().bottom >= 0) {
+          var xPos = -2 * document.body.scrollTop;
+          clouds.style.backgroundPosition = xPos + 'px top';
+        }
+      }, SCROLL_TIMEOUT);
+    });
+  }
+
   /**
    * @const
    * @type {number}
@@ -359,7 +389,7 @@
 
     /**
      * Обработчик событий клавиатуры во время паузы.
-     * @param {KeyboardsEvent} evt
+     * @param {KeyboardEvent} evt
      * @private
      * @private
      */
@@ -836,4 +866,6 @@
   var game = new Game(document.querySelector('.demo'));
   game.initializeLevelAndStart();
   game.setGameStatus(window.Game.Verdict.INTRO);
+
+  scrollDetecting();
 })();
