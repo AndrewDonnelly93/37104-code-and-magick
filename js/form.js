@@ -9,13 +9,15 @@
    * @param {Element} element
    * @param {string} className
    * @param {boolean=} action
-  */
+   */
   function toggleClass(element, className, action) {
     if (action && element.className.indexOf(className) === -1) {
-      element.className += ' ' + className;
-    } else if (!action) {
-      element.className =
-        element.className.replace(new RegExp('\s*' + className + '\s*', 'g'), '');
+      element.className = !element.className.length ? className :
+      element.className + ' ' + className;
+    } else if (!action && element.className.indexOf(className) !== -1) {
+      var classList = element.className.split(' ');
+      classList.splice(classList.indexOf(className), 1);
+      element.className = classList.join(' ');
     }
   }
 

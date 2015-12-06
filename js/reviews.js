@@ -9,14 +9,12 @@
    */
   function toggleClass(element, className, action) {
     if (action && element.className.indexOf(className) === -1) {
-      if (!element.className.length) {
-        element.className += className;
-      } else {
-        element.className += ' ' + className;
-      }
-    } else if (!action) {
-      element.className =
-        element.className.replace(new RegExp('\s*\b' + className + '\b\s*', 'g'), '');
+      element.className = !element.className.length ? className :
+        element.className + ' ' + className;
+    } else if (!action && element.className.indexOf(className) !== -1) {
+      var classList = element.className.split(' ');
+      classList.splice(classList.indexOf(className), 1);
+      element.className = classList.join(' ');
     }
   }
 
@@ -55,46 +53,45 @@
 
       var xhr = new XMLHttpRequest();
       xhr.open('GET', 'data/reviews.json');
-      var self = this;
       xhr.timeout = 15000;
 
       /**
        * Обработка списка отзывов в случае зависания сервера
        * К reviews добавляется класс review-load-failure
        */
-      xhr.ontimeout = function() {
-        toggleClass(self.container, 'invisible', true);
-        toggleClass(self.container.parentElement, 'reviews-list-loading');
-        toggleClass(self.container.parentElement, 'review-load-failure', true);
-      };
+      xhr.ontimeout = (function() {
+        toggleClass(this.container, 'invisible', true);
+        toggleClass(this.container.parentElement, 'reviews-list-loading');
+        toggleClass(this.container.parentElement, 'review-load-failure', true);
+      }).bind(this);
 
       // Пока длится загрузка файла, к reviews добавлятся класс
       // reviews-list-loading
-      xhr.onreadystatechange = function() {
+      xhr.onreadystatechange = (function() {
         if (xhr.readyState < 4) {
-          toggleClass(self.container, 'invisible', true);
-          toggleClass(self.container.parentElement, 'reviews-list-loading', true);
+          toggleClass(this.container, 'invisible', true);
+          toggleClass(this.container.parentElement, 'reviews-list-loading', true);
         } else if (xhr.readyState === 4) {
           if (xhr.status === 200) {
-            toggleClass(self.container.parentElement, 'review-load-failure');
-            toggleClass(self.container, 'invisible');
+            toggleClass(this.container.parentElement, 'review-load-failure');
+            toggleClass(this.container, 'invisible');
           }
-          toggleClass(self.container.parentElement, 'reviews-list-loading');
+          toggleClass(this.container.parentElement, 'reviews-list-loading');
         }
-      };
+      }).bind(this);
 
-      xhr.onerror = function() {
-        toggleClass(self.container.parentElement, 'reviews-list-loading');
-        toggleClass(self.container, 'invisible', true);
-        toggleClass(self.container.parentElement, 'review-load-failure', true);
-      };
+      xhr.onerror = (function() {
+        toggleClass(this.container.parentElement, 'reviews-list-loading');
+        toggleClass(this.container, 'invisible', true);
+        toggleClass(this.container.parentElement, 'review-load-failure', true);
+      }).bind(this);
 
-      xhr.onload = function(e) {
-        toggleClass(self.container, 'invisible');
-        toggleClass(self.container.parentElement, 'reviews-list-loading');
-        toggleClass(self.container.parentElement, 'review-load-failure');
-        self.setReviews(JSON.parse(e.target.response));
-      };
+      xhr.onload = (function(e) {
+        toggleClass(this.container, 'invisible');
+        toggleClass(this.container.parentElement, 'reviews-list-loading');
+        toggleClass(this.container.parentElement, 'review-load-failure');
+        this.setReviews(JSON.parse(e.target.response));
+      }).bind(this);
 
       xhr.send();
     },
@@ -153,16 +150,15 @@
      * Установка обработчика событий по клику на кнопку 'еще отзывы'
      */
     showMoreReviews: function() {
-      var self = this;
-      this.getMore().addEventListener('click', function() {
-        var currentPage = self.getCurrentPage();
+      this.getMore().addEventListener('click', (function() {
+        var currentPage = this.getCurrentPage();
         // Для отображения следующей порции отзывов нужно посмотреть, есть ли они
         // Страницы нумеруются с 0, поэтому вычитаем из потолка единицу
-        if (currentPage < (Math.ceil(self.getFilteredReviews().length / self.getPageSize())) - 1) {
-          self.setCurrentPage(currentPage + 1);
-          self.templateAndAppend();
+        if (currentPage < (Math.ceil(this.getFilteredReviews().length / this.getPageSize())) - 1) {
+          this.setCurrentPage(currentPage + 1);
+          this.templateAndAppend();
         }
-      });
+      }).bind(this));
     },
 
     /**
@@ -177,13 +173,12 @@
     * Установка обработчика событий по клику на список фильтров
      */
     setCurrentFilter: function() {
-      var self = this;
-      this.getFilters().addEventListener('click', function(e) {
+      this.getFilters().addEventListener('click', (function(e) {
         var clickedElement = e.target;
         if (clickedElement.className.indexOf('reviews-filter-item')) {
-          self.setActiveFilter(clickedElement.id);
+          this.setActiveFilter(clickedElement.id);
         }
-      });
+      }).bind(this));
     },
 
     /**
@@ -213,8 +208,6 @@
       }
       var filteredReviews = this.reviews.slice(0);
       switch (id) {
-        case 'reviews-all':
-          break;
         case 'reviews-recent':
           // Выборка отзывов за прошедшие полгода
           filteredReviews = filteredReviews.filter(function(review) {
@@ -254,6 +247,7 @@
             return b['review-rating'] - a['review-rating'];
           });
           break;
+        case 'reviews-all':
         default:
           break;
       }
@@ -269,7 +263,6 @@
      * @param {boolean=} replace При true очистка контейнера
      */
     templateAndAppend: function(replace) {
-      var template = this.template;
       var tempContainer = document.createDocumentFragment();
       if (replace) {
         this.container.innerHTML = '';
@@ -285,11 +278,9 @@
         // вариант.
         // 'content' in template вернет true, если template является
         // объектом DocumentFragment, иначе шаблоны не поддерживаются, и это IE.
-        if ('content' in template) {
-          reviewTemplate = template.content.children[0].cloneNode(true);
-        } else {
-          reviewTemplate = template.children[0].cloneNode(true);
-        }
+        reviewTemplate = 'content' in this.template ?
+          this.template.content.children[0].cloneNode(true) :
+          this.template.children[0].cloneNode(true);
         // Добавление изображения
         var author = reviewTemplate.querySelector('.review-author');
         this.uploadImage(reviews[i].author.picture, author, reviews[i].author.name);
