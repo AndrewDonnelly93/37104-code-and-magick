@@ -47,46 +47,46 @@
 
       var xhr = new XMLHttpRequest();
       xhr.open('GET', 'data/reviews.json');
-      var self = this;
+      //var self = this;
       xhr.timeout = 15000;
 
       /**
        * Обработка списка отзывов в случае зависания сервера
        * К reviews добавляется класс review-load-failure
        */
-      xhr.ontimeout = function() {
-        toggleClass(self.container, 'invisible', true);
-        toggleClass(self.container.parentElement, 'reviews-list-loading');
-        toggleClass(self.container.parentElement, 'review-load-failure', true);
-      };
+      xhr.ontimeout = (function() {
+        toggleClass(this.container, 'invisible', true);
+        toggleClass(this.container.parentElement, 'reviews-list-loading');
+        toggleClass(this.container.parentElement, 'review-load-failure', true);
+      }).bind(this);
 
       // Пока длится загрузка файла, к reviews добавлятся класс
       // reviews-list-loading
-      xhr.onreadystatechange = function() {
+      xhr.onreadystatechange = (function() {
         if (xhr.readyState < 4) {
-          toggleClass(self.container, 'invisible', true);
-          toggleClass(self.container.parentElement, 'reviews-list-loading', true);
+          toggleClass(this.container, 'invisible', true);
+          toggleClass(this.container.parentElement, 'reviews-list-loading', true);
         } else if (xhr.readyState === 4) {
           if (xhr.status === 200) {
-            toggleClass(self.container.parentElement, 'review-load-failure');
-            toggleClass(self.container, 'invisible');
+            toggleClass(this.container.parentElement, 'review-load-failure');
+            toggleClass(this.container, 'invisible');
           }
-          toggleClass(self.container.parentElement, 'reviews-list-loading');
+          toggleClass(this.container.parentElement, 'reviews-list-loading');
         }
-      };
+      }).bind(this);
 
       xhr.onerror = function() {
-        toggleClass(self.container.parentElement, 'reviews-list-loading');
-        toggleClass(self.container, 'invisible', true);
-        toggleClass(self.container.parentElement, 'review-load-failure', true);
+        toggleClass(this.container.parentElement, 'reviews-list-loading');
+        toggleClass(this.container, 'invisible', true);
+        toggleClass(this.container.parentElement, 'review-load-failure', true);
       };
 
-      xhr.onload = function(e) {
-        toggleClass(self.container, 'invisible');
-        toggleClass(self.container.parentElement, 'reviews-list-loading');
-        toggleClass(self.container.parentElement, 'review-load-failure');
+      xhr.onload = (function(e) {
+        toggleClass(this.container, 'invisible');
+        toggleClass(this.container.parentElement, 'reviews-list-loading');
+        toggleClass(this.container.parentElement, 'review-load-failure');
         self.setReviews(JSON.parse(e.target.response));
-      };
+      }).bind(this);
 
       xhr.send();
     },
