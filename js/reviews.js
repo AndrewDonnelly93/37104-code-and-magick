@@ -1,3 +1,5 @@
+/* global Review: true */
+
 'use strict';
 
 (function() {
@@ -22,11 +24,10 @@
    * Конструктор
    * @param {Element} filter список фильтров
    * @param {Element} container контейнер для размещения списка отзывов
-   * @param {Element} template шаблон для отзыва
    * @param {Element} more кнопка для показа следующей страницы отзывов
    * @constructor
    */
-  var ReviewsList = function(filter, container, template, more) {
+  var ReviewsList = function(filter, container, more) {
     this.filter = {
       all: filter,
       active: 'reviews-all'
@@ -35,9 +36,8 @@
       current: 0,
       PAGE_SIZE: 3
     };
-    toggleClass(this.filter.all, 'invisible', true);
+    toggleClass(this.getFilters(), 'invisible', true);
     this.container = container;
-    this.template = template;
     this.more = more;
     this.filteredReviews = [];
     this.getReviewsByAJAX();
@@ -47,10 +47,18 @@
   ReviewsList.prototype = {
 
     /**
+     * Получение контейнера
+     */
+    getContainer: function() {
+      return this.container;
+    },
+
+    /**
      * Получение списка отзывов по AJAX
      */
     getReviewsByAJAX: function() {
 
+      var container = this.getContainer();
       var xhr = new XMLHttpRequest();
       xhr.open('GET', 'data/reviews.json');
       xhr.timeout = 15000;
@@ -59,37 +67,37 @@
        * Обработка списка отзывов в случае зависания сервера
        * К reviews добавляется класс review-load-failure
        */
-      xhr.ontimeout = (function() {
-        toggleClass(this.container, 'invisible', true);
-        toggleClass(this.container.parentElement, 'reviews-list-loading');
-        toggleClass(this.container.parentElement, 'review-load-failure', true);
-      }).bind(this);
+      xhr.ontimeout = function() {
+        toggleClass(container, 'invisible', true);
+        toggleClass(container.parentElement, 'reviews-list-loading');
+        toggleClass(container.parentElement, 'review-load-failure', true);
+      };
 
       // Пока длится загрузка файла, к reviews добавлятся класс
       // reviews-list-loading
-      xhr.onreadystatechange = (function() {
+      xhr.onreadystatechange = function() {
         if (xhr.readyState < 4) {
-          toggleClass(this.container, 'invisible', true);
-          toggleClass(this.container.parentElement, 'reviews-list-loading', true);
+          toggleClass(container, 'invisible', true);
+          toggleClass(container.parentElement, 'reviews-list-loading', true);
         } else if (xhr.readyState === 4) {
           if (xhr.status === 200) {
-            toggleClass(this.container.parentElement, 'review-load-failure');
-            toggleClass(this.container, 'invisible');
+            toggleClass(container.parentElement, 'review-load-failure');
+            toggleClass(container, 'invisible');
           }
-          toggleClass(this.container.parentElement, 'reviews-list-loading');
+          toggleClass(container.parentElement, 'reviews-list-loading');
         }
-      }).bind(this);
+      };
 
-      xhr.onerror = (function() {
-        toggleClass(this.container.parentElement, 'reviews-list-loading');
-        toggleClass(this.container, 'invisible', true);
-        toggleClass(this.container.parentElement, 'review-load-failure', true);
-      }).bind(this);
+      xhr.onerror = function() {
+        toggleClass(container.parentElement, 'reviews-list-loading');
+        toggleClass(container, 'invisible', true);
+        toggleClass(container.parentElement, 'review-load-failure', true);
+      };
 
       xhr.onload = (function(e) {
-        toggleClass(this.container, 'invisible');
-        toggleClass(this.container.parentElement, 'reviews-list-loading');
-        toggleClass(this.container.parentElement, 'review-load-failure');
+        toggleClass(container, 'invisible');
+        toggleClass(container.parentElement, 'reviews-list-loading');
+        toggleClass(container.parentElement, 'review-load-failure');
         this.setReviews(JSON.parse(e.target.response));
       }).bind(this);
 
@@ -108,6 +116,14 @@
     */
     getActiveFilter: function() {
       return this.filter.active;
+    },
+
+    /**
+     * Установка активного фильтра
+     * @param {Element} filter
+     */
+    setActiveFilter: function(filter) {
+      this.filter.active = filter;
     },
 
     /**
@@ -156,7 +172,7 @@
         // Страницы нумеруются с 0, поэтому вычитаем из потолка единицу
         if (currentPage < (Math.ceil(this.getFilteredReviews().length / this.getPageSize())) - 1) {
           this.setCurrentPage(currentPage + 1);
-          this.templateAndAppend();
+          this.renderReviews();
         }
       }).bind(this));
     },
@@ -176,7 +192,7 @@
       this.getFilters().addEventListener('click', (function(e) {
         var clickedElement = e.target;
         if (clickedElement.className.indexOf('reviews-filter-item')) {
-          this.setActiveFilter(clickedElement.id);
+          this.filterReviews(clickedElement.id);
         }
       }).bind(this));
     },
@@ -186,7 +202,7 @@
      */
     setReviews: function(reviews) {
       this.reviews = reviews;
-      this.setActiveFilter(this.filter.active, true);
+      this.filterReviews(this.getActiveFilter(), true);
     },
 
     /**
@@ -202,7 +218,7 @@
      * @param {boolean=} force Флаг, при котором игнорируется проверка
      *     на повторное присвоение фильтра
      */
-    setActiveFilter: function(id, force) {
+    filterReviews: function(id, force) {
       if ((this.getActiveFilter() === id) && !force) {
         return;
       }
@@ -253,8 +269,8 @@
       }
       this.setCurrentPage(0);
       this.setFilteredReviews(filteredReviews);
-      this.templateAndAppend(true);
-      this.filter.active = id;
+      this.renderReviews(true);
+      this.setActiveFilter(id);
     },
 
     /**
@@ -262,97 +278,35 @@
      * после этого в DOM.
      * @param {boolean=} replace При true очистка контейнера
      */
-    templateAndAppend: function(replace) {
+    renderReviews: function(replace) {
       var tempContainer = document.createDocumentFragment();
+      var container = this.getContainer();
+      // Очищение списка отзывов в контейнере
       if (replace) {
-        this.container.innerHTML = '';
+        Array.prototype.forEach.call(container.querySelectorAll('.review'), function(review) {
+          container.removeChild(review);
+        });
       }
       var PAGE_SIZE = this.getPageSize();
       var from = this.getCurrentPage() * PAGE_SIZE;
       var to = from + PAGE_SIZE;
       var reviews = this.getFilteredReviews().slice(from, to);
-      var reviewTemplate;
       for (var i = 0; i < reviews.length; i++) {
-        // Свойство 'content' у шаблонов не работает в IE, поскольку он
-        // не поддерживает template. Поэтому для IE пишется альтернативный
-        // вариант.
-        // 'content' in template вернет true, если template является
-        // объектом DocumentFragment, иначе шаблоны не поддерживаются, и это IE.
-        reviewTemplate = 'content' in this.template ?
-          this.template.content.children[0].cloneNode(true) :
-          this.template.children[0].cloneNode(true);
-        // Добавление изображения
-        var author = reviewTemplate.querySelector('.review-author');
-        this.uploadImage(reviews[i].author.picture, author, reviews[i].author.name);
-        // Добавление рейтинга
-        for (var j = 0; j < reviews[i].rating; j++) {
-          var star = document.createElement('span');
-          toggleClass(star, 'review-rating', true);
-          reviewTemplate.insertBefore(star, reviewTemplate.querySelector('.review-text'));
-        }
-        reviewTemplate.querySelector('.review-text').textContent = reviews[i].description;
-        tempContainer.appendChild(reviewTemplate);
+        var review = new Review(reviews[i]);
+        review.render();
+        tempContainer.appendChild(review.getElement());
       }
-      this.container.appendChild(tempContainer);
+      container.appendChild(tempContainer);
       // Показывает фильтры у отзывов после загрузки списка отзывов
-      toggleClass(this.filter.all, 'invisible');
-    },
-
-    /**
-     * Обработчик изображений
-     * @param {string} imageSrc адрес фотографии автора отзыва
-     * @param {Element} author шаблон отзыва
-     * @param {string} authorName имя автора
-     */
-    uploadImage: function(imageSrc, author, authorName) {
-      var IMAGE_SIZE = 124;
-      var authorImage = new Image();
-      var IMAGE_TIMEOUT = 10000;
-
-      /**
-       * Обработка изображения в случае зависания сервера
-       */
-      var imageLoadTimeout = setTimeout(function() {
-        authorImage.src = '';
-        toggleClass(author.parentElement, 'review-load-failure', true);
-      }, IMAGE_TIMEOUT);
-
-      /**
-       * Обработка изображения в случае успешной загрузки
-       */
-      authorImage.onload = function() {
-        if (imageLoadTimeout) {
-          clearTimeout(imageLoadTimeout);
-        }
-        authorImage.width = IMAGE_SIZE;
-        authorImage.height = IMAGE_SIZE;
-        toggleClass(authorImage, 'review-author', true);
-        authorImage.setAttribute('alt', authorName);
-        authorImage.setAttribute('title', authorName);
-        author.parentElement.replaceChild(authorImage, author.parentElement.querySelector('img'));
-      };
-
-      /**
-       * Обработка изображения в случае ошибки при загрузке
-       */
-      authorImage.onerror = function() {
-        if (imageLoadTimeout) {
-          clearTimeout(imageLoadTimeout);
-        }
-        author.parentElement.querySelector('img').setAttribute('alt', authorName);
-        author.parentElement.querySelector('img').setAttribute('title', authorName);
-        authorImage.src = '';
-        toggleClass(author.parentElement, 'review-load-failure', true);
-      };
-
-      authorImage.src = imageSrc;
+      toggleClass(this.getFilters(), 'invisible');
     }
+
   };
 
   var reviewList = new ReviewsList(document.querySelector('.reviews-filter'),
-  document.querySelector('.reviews-list'), document.querySelector('#review-template'),
-  document.querySelector('.reviews-controls-more'));
+  document.querySelector('.reviews-list'), document.querySelector('.reviews-controls-more'));
 
   reviewList.setCurrentFilter();
 
+  window.toggleClass = toggleClass;
 })();
