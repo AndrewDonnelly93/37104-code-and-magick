@@ -1,4 +1,4 @@
-/* global Review: true */
+/* global Review: true, Gallery: true */
 
 'use strict';
 
@@ -307,6 +307,21 @@
   document.querySelector('.reviews-list'), document.querySelector('.reviews-controls-more'));
 
   reviewList.setCurrentFilter();
+
+  /**
+   * Создание текущей галереи
+   * @type {Gallery}
+   */
+  var gallery = new Gallery();
+
+  var gallerySection = document.querySelector('.photogallery');
+
+  gallerySection.addEventListener('click', function(e) {
+    if (e.target.tagName === 'IMG') {
+      e.preventDefault();
+      gallery.show();
+    }
+  });
 
   window.toggleClass = toggleClass;
 })();
