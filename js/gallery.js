@@ -19,6 +19,10 @@
     this._pressNextButton = this._pressNextButton.bind(this);
   }
 
+  /**
+   * Прототип галереи
+   * @type {{getElement: Function, _getCloseButton: Function, _getPrevButton: Function, _getNextButton: Function, show: Function, hide: Function, _onCloseClick: Function, _onDocumentKeyDown: Function, _pressPrevButton: Function, _pressNextButton: Function}}
+   */
   Gallery.prototype = {
 
     /**

@@ -44,6 +44,10 @@
     this.showMoreReviews();
   };
 
+  /**
+   * Прототип списка отзывов
+   * @type {{getContainer: Function, getReviewsByAJAX: Function, getFilters: Function, getActiveFilter: Function, setActiveFilter: Function, getCurrentPage: Function, getPageSize: Function, getFilteredReviews: Function, setFilteredReviews: Function, getMore: Function, showMoreReviews: Function, setCurrentPage: Function, setCurrentFilter: Function, setReviews: Function, getReviews: Function, filterReviews: Function, renderReviews: Function}}
+   */
   ReviewsList.prototype = {
 
     /**
@@ -73,8 +77,10 @@
         toggleClass(container.parentElement, 'review-load-failure', true);
       };
 
-      // Пока длится загрузка файла, к reviews добавлятся класс
-      // reviews-list-loading
+      /**
+       * Пока длится загрузка файла, к reviews добавлятся класс
+       * reviews-list-loading
+       */
       xhr.onreadystatechange = function() {
         if (xhr.readyState < 4) {
           toggleClass(container, 'invisible', true);
@@ -88,12 +94,21 @@
         }
       };
 
+      /**
+       * При ошибке в процессе загрузки отзыву добавляется класс
+       * review-load-failure
+       */
       xhr.onerror = function() {
         toggleClass(container.parentElement, 'reviews-list-loading');
         toggleClass(container, 'invisible', true);
         toggleClass(container.parentElement, 'review-load-failure', true);
       };
 
+      /**
+       * После загрузки данных по AJAX список отзывов записывается
+       * в прототип ReviewsList
+       * @type {function(this:ReviewsList)}
+       */
       xhr.onload = (function(e) {
         toggleClass(container, 'invisible');
         toggleClass(container.parentElement, 'reviews-list-loading');
@@ -303,6 +318,10 @@
 
   };
 
+  /**
+   * Создание нового объекта - списка отзывов
+   * @type {ReviewsList}
+   */
   var reviewList = new ReviewsList(document.querySelector('.reviews-filter'),
   document.querySelector('.reviews-list'), document.querySelector('.reviews-controls-more'));
 
@@ -316,6 +335,9 @@
 
   var gallerySection = document.querySelector('.photogallery');
 
+  /**
+   * Галерея показывается при клике на картинку
+   */
   gallerySection.addEventListener('click', function(e) {
     if (e.target.tagName === 'IMG') {
       e.preventDefault();

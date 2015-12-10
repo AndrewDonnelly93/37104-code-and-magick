@@ -25,16 +25,30 @@
   var formOpenButton = document.querySelector('.reviews-controls-new');
   var formCloseButton = document.querySelector('.review-form-close');
 
+  /**
+   * Открывает форму с отзывом
+   * @param evt
+   */
   formOpenButton.onclick = function(evt) {
     evt.preventDefault();
     toggleClass(formContainer, 'invisible');
   };
 
+  /**
+   * Закрывает форму с отзывом
+   * @param evt
+   */
   formCloseButton.onclick = function(evt) {
     evt.preventDefault();
     toggleClass(formContainer, 'invisible', true);
   };
 
+  /**
+   * Проверяет заполненность поля (в  него должен быть
+   * введен хотя бы один символ)
+   * @param element
+   * @returns {boolean}
+   */
   function checkRequiredField(element) {
     if (typeof element !== 'string') {
       return element.value.length ? true : false;
@@ -43,16 +57,27 @@
     }
   }
 
-  // Сохранение в cookies последних валидных значений оценки игры и
-  // имени пользователя
+  /**
+   * Сохранение в cookies последних валидных значений оценки игры и
+   * имени пользователя
+   * @param username имя пользователя
+   * @param mark оценка
+   */
   function setCookies(username, mark) {
     var currentDate = new Date();
     var currentYear = currentDate.getFullYear();
+    /**
+     * @type {Date}
+     */
     var birthdayDate = new Date(currentYear, 2, 14);
     if (+currentDate - +birthdayDate < 0) {
       birthdayDate = new Date(currentYear - 1, 2, 14);
     }
     var timeToExpire = Math.ceil(+currentDate - +birthdayDate);
+    /**
+     * Дата истечения cookie
+     * @type {string}
+     */
     var dateToExpire = new Date(+currentDate + timeToExpire).toUTCString();
     docCookies.setItem('username', username, dateToExpire);
     docCookies.setItem('mark', mark, dateToExpire);
@@ -90,6 +115,10 @@
     this.setCurrentMark();
   };
 
+  /**
+   * Прототип объекта формы
+   * @type {{getForm: Function, getSubmit: Function, getLimitReview: Function, setSubmitDisabled: Function, getRadios: Function, getReview: Function, getUsername: Function, setUsername: Function, getCurrentMark: Function, setCurrentMark: Function, formValidation: Function, getControlList: Function, checkControlList: Function, createErrorNode: Function, removeErrorNode: Function, validUsername: Function, validReview: Function}}
+   */
   Form.prototype = {
 
 
@@ -157,6 +186,10 @@
       this.username.value = username;
     },
 
+    /**
+     * Получение текущей оценки
+     * @return {number}
+     */
     getCurrentMark: function() {
       return this.radios.current;
     },
@@ -178,7 +211,10 @@
       this.formValidation();
     },
 
-    // Валидация формы на основе текущей радиокнопки
+    /**
+     * Валидация формы на основе текущей радиокнопки
+     * @return {number}
+     */
     formValidation: function() {
       var result = 0;
       var currentMark = this.getCurrentMark();
@@ -261,7 +297,6 @@
      * @param {string} errorMessage
      * @param {Element} currentField
      */
-
     createErrorNode: function(errorMessage, currentField) {
       var parent = currentField.parentElement;
       var children = parent.children;
@@ -291,6 +326,7 @@
 
     /**
      * Валидация ввода имени пользователя в форму
+     * @return {boolean}
      */
     validUsername: function() {
       var currentField = 'username';
@@ -352,16 +388,31 @@
 
   var review = document.getElementById('review-text');
 
+  /**
+   * @type {Form}
+   */
   var reviewForm = new Form(form, controlList, submit, radios, username, review);
 
+  /**
+   * При изменении данных в поле ввода имени
+   * вызывается валидация этого поля
+   */
   reviewForm.getUsername().onchange = function() {
     reviewForm.validUsername();
   };
 
+  /**
+   * При изменении данных в поле ввода отзыва
+   * вызывается валидация формы
+   */
   reviewForm.getReview().onchange = function() {
     reviewForm.formValidation();
   };
 
+  /**
+   * На каждую радиокнопку навешивается обработчик события изменения,
+   * устанавливающий текущую оценку игры пользоавтелем
+   */
   Array.prototype.forEach.call(reviewForm.getRadios(), function(radio) {
     radio.onchange = function() {
       reviewForm.setCurrentMark();

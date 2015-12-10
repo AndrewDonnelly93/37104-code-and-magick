@@ -1,3 +1,9 @@
+/**
+ * Возвращает сообщение в зависимости от действий пользователя
+ * @param a
+ * @param b
+ * @returns {string}
+ */
 function getMessage(a, b) {
   if (Array.isArray(a) && Array.isArray(b)) {
     var product = a.reduce(function(sum, item, i) {
