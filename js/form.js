@@ -115,12 +115,7 @@
     this.setCurrentMark();
   };
 
-  /**
-   * Прототип объекта формы
-   * @type {{getForm: Function, getSubmit: Function, getLimitReview: Function, setSubmitDisabled: Function, getRadios: Function, getReview: Function, getUsername: Function, setUsername: Function, getCurrentMark: Function, setCurrentMark: Function, formValidation: Function, getControlList: Function, checkControlList: Function, createErrorNode: Function, removeErrorNode: Function, validUsername: Function, validReview: Function}}
-   */
   Form.prototype = {
-
 
     /**
      * Получение формы

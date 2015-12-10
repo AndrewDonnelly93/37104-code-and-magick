@@ -44,10 +44,6 @@
     this.showMoreReviews();
   };
 
-  /**
-   * Прототип списка отзывов
-   * @type {{getContainer: Function, getReviewsByAJAX: Function, getFilters: Function, getActiveFilter: Function, setActiveFilter: Function, getCurrentPage: Function, getPageSize: Function, getFilteredReviews: Function, setFilteredReviews: Function, getMore: Function, showMoreReviews: Function, setCurrentPage: Function, setCurrentFilter: Function, setReviews: Function, getReviews: Function, filterReviews: Function, renderReviews: Function}}
-   */
   ReviewsList.prototype = {
 
     /**
@@ -181,13 +177,17 @@
      * Установка обработчика событий по клику на кнопку 'еще отзывы'
      */
     showMoreReviews: function() {
-      this.getMore().addEventListener('click', (function() {
+      var getMoreBtn = this.getMore();
+      getMoreBtn.addEventListener('click', (function() {
         var currentPage = this.getCurrentPage();
         // Для отображения следующей порции отзывов нужно посмотреть, есть ли они
         // Страницы нумеруются с 0, поэтому вычитаем из потолка единицу
         if (currentPage < (Math.ceil(this.getFilteredReviews().length / this.getPageSize())) - 1) {
+          toggleClass(getMoreBtn, 'invisible', false);
           this.setCurrentPage(currentPage + 1);
           this.renderReviews();
+        } else {
+          toggleClass(getMoreBtn, 'invisible', true);
         }
       }).bind(this));
     },
@@ -298,6 +298,7 @@
       var container = this.getContainer();
       // Очищение списка отзывов в контейнере
       if (replace) {
+        toggleClass(this.getMore(), 'invisible', false);
         Array.prototype.forEach.call(container.querySelectorAll('.review'), function(review) {
           container.removeChild(review);
         });

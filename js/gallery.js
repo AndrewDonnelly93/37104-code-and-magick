@@ -19,10 +19,6 @@
     this._pressNextButton = this._pressNextButton.bind(this);
   }
 
-  /**
-   * Прототип галереи
-   * @type {{getElement: Function, _getCloseButton: Function, _getPrevButton: Function, _getNextButton: Function, show: Function, hide: Function, _onCloseClick: Function, _onDocumentKeyDown: Function, _pressPrevButton: Function, _pressNextButton: Function}}
-   */
   Gallery.prototype = {
 
     /**
@@ -71,7 +67,7 @@
       this._getPrevButton().addEventListener('click', this._pressPrevButton);
       this._getNextButton().addEventListener('click', this._pressNextButton);
       // Закрываем галерею по клику на esc
-      this._onDocumentKeyDown();
+      window.addEventListener('keydown', this._onDocumentKeyDown());
     },
 
     /**
@@ -98,13 +94,11 @@
      * Закрывает галерею по клику на esc
      * @private
      */
-    _onDocumentKeyDown: function() {
-      window.onkeydown = (function(e) {
-        if (e.keyCode === 27) {
-          this.hide();
-        }
-      }).bind(this);
-    },
+    _onDocumentKeyDown: (function(e) {
+      if (e.keyCode === 27) {
+        this.hide();
+      }
+    }).bind(this),
 
     /**
      * Обработчик нажатия на контрол для перемещения влево
