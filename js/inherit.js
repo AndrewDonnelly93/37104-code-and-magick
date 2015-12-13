@@ -1,5 +1,7 @@
-/*В форке личного проекта создайте ветку module8-task2 и в ней создайте файл js/inherit.js. В этом файле объявите в глобальной области видимости функцию inherit(child: Function, parent: Function), которая принимает на два конструктора и записывает в прототип дочернего конструктора child методы и свойства родительского конструктора parent через пустой конструктор.*/
 /* global inherit: true */
+/* exported inherit */
+
+'use strict';
 
 /**
  * Принимает два конструктора и записывает в прототип
@@ -10,5 +12,8 @@
  */
 
 function inherit(child, parent) {
-    
+  var EmptyConstructor = function() {};
+  EmptyConstructor.prototype = parent.prototype;
+  child.prototype = new EmptyConstructor();
+  child.prototype.constructor = child;
 }
