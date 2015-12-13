@@ -320,7 +320,7 @@
     image.addEventListener('click', function(e) {
       e.stopPropagation();
       gallery.show();
-    })
+    });
   });
 
   window.toggleClass = toggleClass;
