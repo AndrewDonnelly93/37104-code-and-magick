@@ -1,4 +1,4 @@
-/* global toggleClass: true */
+/* global toggleClass: true, Photo: true */
 
 'use strict';
 
@@ -10,15 +10,23 @@
    */
   function Gallery() {
     this.element = document.querySelector('.overlay-gallery');
+    // контейнер, в котором хранится фотография
+    this.photoContainer = document.querySelector('.overlay-gallery-preview');
+    // номер текущей фотографии
+    this.previewNumberCurrent = document.querySelector('.preview-number-current');
+    // количество всех фотографий
+    this.previewNumberTotal = document.querySelector('.preview-number-total');
     this._closeButton = document.querySelector('.overlay-gallery-close');
     this._prevButton = document.querySelector('.overlay-gallery-control-left');
     this._nextButton = document.querySelector('.overlay-gallery-control-right');
+    this.pictures = [];
     this.show = this.show.bind(this);
     this.hide = this.hide.bind(this);
     this._onCloseClick = this._onCloseClick.bind(this);
     this._onDocumentKeyDown = this._onDocumentKeyDown.bind(this);
     this._pressPrevButton = this._pressPrevButton.bind(this);
     this._pressNextButton = this._pressNextButton.bind(this);
+    this.setPictures = this.setPictures.bind(this);
   }
 
   Gallery.prototype = {
@@ -29,6 +37,33 @@
      */
     getElement: function() {
       return this.element;
+    },
+
+    /**
+     * Отдает контейнер, в котором находится фотография
+     * @return {HTMLElement|*}
+     * @private
+     */
+    _getPhotoContainer: function() {
+      return this.photoContainer;
+    },
+
+    /**
+     * Отдает контейнер, в котором находится номер текущей фотографии
+     * @return {HTMLElement|*}
+     * @private
+     */
+    _getPreviewNumberCurrent: function() {
+      return this.previewNumberCurrent;
+    },
+
+    /**
+     * Отдает контейнер, в котором находится количество всех фотографий
+     * @return {HTMLElement|*}
+     * @private
+     */
+    _getPreviewNumberTotal: function() {
+      return this.previewNumberCurrent;
     },
 
     /**
@@ -140,6 +175,43 @@
      */
     _pressNextButton: function() {
 
+    },
+
+    /**
+     * Передает в галерею фотографии
+     * @param {Array.<Photo>} photos
+     */
+    setPictures: function(photos) {
+      photos.forEach((function(photo) {
+        this.pictures.push(photo);
+      }).bind(this));
+    },
+
+    /**
+     * Отдает массив фотографий
+     * @returns {Array}
+     */
+    getPictures: function() {
+      return this.pictures;
+    },
+    
+    /**
+     * Берет фотографию из массива фотографий,
+     * отрисовывает ее в галерее, обновляя .overlay-gallery:
+     * добавляет фото в .overlay-gallery-preview, обновляет блоки
+     * .preview-number-current и .preview-number-total
+     * @param {number} number
+     */
+    setCurrentPicture: function(number) {
+      var pictures = this.getPictures();
+      var photo = new Image();
+      photo.src = pictures[number];
+      // Добавление фотографии в контейнер
+      this._getPhotoContainer().appendChild(photo);
+      // Обновление блока .preview-number-current
+      this._getPreviewNumberCurrent().textContent = number.toString();
+      // Обновление блока .preview-number-total
+      this._getPreviewNumberTotal().textContent = pictures.length.toString();
     }
   };
 
