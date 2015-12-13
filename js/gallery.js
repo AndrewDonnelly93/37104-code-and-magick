@@ -2,7 +2,7 @@
 
 'use strict';
 
-(function () {
+(function() {
 
   /**
    * Создает объект типа 'Галерея'
@@ -117,7 +117,7 @@
      * @param element
      */
     contains: function(container, element) {
-      if (container == element) {
+      if (container === element) {
         return true;
       } else if (element.parentNode) {
         return this.contains(container, element.parentNode);
@@ -130,7 +130,7 @@
      * Обработчик нажатия на контрол для перемещения влево
      * @private
      */
-    _pressPrevButton: function () {
+    _pressPrevButton: function() {
 
     },
 
@@ -138,7 +138,7 @@
      * Обработчик нажатия на контрол для перемещения вправо
      * @private
      */
-    _pressNextButton: function () {
+    _pressNextButton: function() {
 
     }
   };
