@@ -14,7 +14,6 @@
     window.addEventListener('scroll', function() {
       clearTimeout(scrollTimeout);
       scrollTimeout = setTimeout(function() {
-        console.log(game.state.currentStatus);
         // Если блок с игрой не виден в данный момент, то игра
         // ставится на паузу
         var demoCoords = demo.getBoundingClientRect();
@@ -24,8 +23,7 @@
         // Координаты фона меняются только в том случае, если блок с облаками
         // виден на странице
         if (clouds.getBoundingClientRect().bottom >= 0) {
-          var xPos = -2 * document.body.scrollTop;
-          clouds.style.backgroundPosition = xPos + 'px top';
+          clouds.style.backgroundPosition = -2 * document.body.scrollTop + 'px top';
         }
       }, SCROLL_TIMEOUT);
     });
