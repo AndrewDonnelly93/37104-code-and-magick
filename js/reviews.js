@@ -314,13 +314,13 @@
    */
   var gallery = new Gallery();
 
-  var gallerySection = document.querySelector('.photogallery');
+  var galleryImages = document.querySelectorAll('.photogallery img');
 
-  gallerySection.addEventListener('click', function(e) {
-    if (e.target.tagName === 'IMG') {
-      e.preventDefault();
+  Array.prototype.forEach.call(galleryImages, function(image) {
+    image.addEventListener('click', function(e) {
+      e.stopPropagation();
       gallery.show();
-    }
+    })
   });
 
   window.toggleClass = toggleClass;
