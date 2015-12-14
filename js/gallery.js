@@ -19,6 +19,8 @@
     this._closeButton = document.querySelector('.overlay-gallery-close');
     this._prevButton = document.querySelector('.overlay-gallery-control-left');
     this._nextButton = document.querySelector('.overlay-gallery-control-right');
+    // номер текущего изображения
+    this._currentImageNumber = 0;
     this.pictures = [];
     this.show = this.show.bind(this);
     this.hide = this.hide.bind(this);
@@ -30,6 +32,24 @@
   }
 
   Gallery.prototype = {
+
+    /**
+     * Отдает номер текущего изображения
+     * @return {number}
+     * @private
+     */
+    _getCurrentImageNumber: function() {
+      return this._currentImageNumber;
+    },
+
+    /**
+     * Устанавливает номер текущего изображения
+     * @param {number} number
+     * @private
+     */
+    _setCurrentImageNumber: function(number) {
+      this._currentImageNumber = number;
+    },
 
     /**
      * Отдает оверлей галереи
@@ -63,7 +83,7 @@
      * @private
      */
     _getPreviewNumberTotal: function() {
-      return this.previewNumberCurrent;
+      return this.previewNumberTotal;
     },
 
     /**
@@ -115,8 +135,8 @@
       // Удаление слушателя событий с крестика
       document.removeEventListener('click', this._onCloseClick);
       // Удаление слушателей событий кликов по контролам
-      this._getPrevButton().addEventListener('click', this._pressPrevButton);
-      this._getNextButton().addEventListener('click', this._pressNextButton);
+      this._getPrevButton().removeEventListener('click', this._pressPrevButton);
+      this._getNextButton().removeEventListener('click', this._pressNextButton);
       document.removeEventListener('keydown', this._onDocumentKeyDown);
     },
 
@@ -140,8 +160,21 @@
      * @private
      */
     _onDocumentKeyDown: function(e) {
-      if (e.keyCode === 27) {
-        this.hide();
+      switch (e.keyCode) {
+        // escape
+        case 27:
+          this.hide();
+          break;
+        // правая стрелка
+        case 39:
+          this._pressNextButton();
+          break;
+        // левая стрелка
+        case 37:
+          this._pressPrevButton();
+          break;
+        default:
+          break;
       }
     },
 
@@ -166,7 +199,12 @@
      * @private
      */
     _pressPrevButton: function() {
-
+      var currentPicture = this._getCurrentImageNumber();
+      if (currentPicture - 1 >= 0) {
+        currentPicture -= 1;
+        this._setCurrentImageNumber(currentPicture);
+        this.setCurrentPicture(currentPicture);
+      }
     },
 
     /**
@@ -174,7 +212,14 @@
      * @private
      */
     _pressNextButton: function() {
-
+      var currentPicture = this._getCurrentImageNumber();
+      // Если номер следующей фотографии меньше, чем длина массива
+      // pictures, уменьшенная на 1, показываем следующую фотографию
+      if (currentPicture + 1 <= (this.getPictures().length- 1)) {
+        currentPicture += 1;
+        this._setCurrentImageNumber(currentPicture);
+        this.setCurrentPicture(currentPicture);
+      }
     },
 
     /**
@@ -194,7 +239,7 @@
     getPictures: function() {
       return this.pictures;
     },
-    
+
     /**
      * Берет фотографию из массива фотографий,
      * отрисовывает ее в галерее, обновляя .overlay-gallery:
@@ -203,13 +248,43 @@
      * @param {number} number
      */
     setCurrentPicture: function(number) {
+      var container =  this._getPhotoContainer();
       var pictures = this.getPictures();
+      var prevButton = this._getPrevButton();
+      var nextButton = this._getNextButton();
       var photo = new Image();
-      photo.src = pictures[number];
+      switch (number) {
+        // Если текущая фотография является первой, показываем ее
+        // и скрываем левый контрол
+        case 0:
+          toggleClass(prevButton, 'invisible', true);
+          break;
+        // Если текущая фотография является последней, показываем ее
+        // и скрываем правый контрол
+        case pictures.length - 1:
+          toggleClass(nextButton, 'invisible', true);
+          break;
+        // Показываем оба контрола
+        default:
+          toggleClass(prevButton, 'invisible', false);
+          toggleClass(nextButton, 'invisible', false);
+          break;
+      }
+
+      // Это потребуется при вызове метода, если
+      // e.target - preview картинки на основной странице
+      if (this._getCurrentImageNumber() !== number) {
+        this._setCurrentImageNumber(number);
+      }
+
+      photo.src = pictures[number].getPhoto();
       // Добавление фотографии в контейнер
-      this._getPhotoContainer().appendChild(photo);
+      Array.prototype.forEach.call(container.querySelectorAll('img'), function(image) {
+        container.removeChild(image);
+      });
+      container.appendChild(photo);
       // Обновление блока .preview-number-current
-      this._getPreviewNumberCurrent().textContent = number.toString();
+      this._getPreviewNumberCurrent().textContent = (number + 1).toString();
       // Обновление блока .preview-number-total
       this._getPreviewNumberTotal().textContent = pictures.length.toString();
     }
