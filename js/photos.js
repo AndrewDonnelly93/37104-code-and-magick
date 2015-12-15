@@ -1,3 +1,7 @@
+/* global Photo: true, Video: true, Gallery: true */
+
+'use strict';
+
 (function() {
 
   /**
@@ -5,10 +9,9 @@
    * @type {*|Array}
    */
   var pictures = Array.prototype.map.call(document.querySelectorAll('.photogallery-image'), function(pic) {
-    return new Photo(pic.querySelector('img').src);
+    return pic.dataset.replacementVideo ?
+      new Video(pic.dataset.replacementVideo) : new Photo(pic.querySelector('img').src);
   });
-
-  console.log(pictures);
 
   /**
    * Создание текущей галереи
