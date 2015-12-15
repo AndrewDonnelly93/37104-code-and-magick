@@ -50,7 +50,7 @@
 
     /**
      * Устанавливает отрисованные отзывы
-     * @param {Array.<Reviews>} reviews
+     * @param {Array.<Review>} reviews
      */
     setRenderedReviews: function(reviews) {
       this.renderedReviews = reviews;
@@ -58,7 +58,7 @@
 
     /**
      * Возвращает отрисованные отзывы
-     * @return {Array.<Reviews>}
+     * @return {Array.<Review>}
      */
     getRenderedReviews: function() {
       return this.renderedReviews;

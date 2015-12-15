@@ -85,34 +85,6 @@
      */
     setReviewRating: function(reviewRating) {
       this['review-rating'] = reviewRating;
-      var xhr = new XMLHttpRequest();
-      xhr.open('GET', 'data/reviews.json');
-      xhr.onreadystatechange = (function(e) {
-        if (xhr.readyState === 4 && xhr.status === 200) {
-          var reviews = JSON.parse(e.target.response);
-          // Получаем номер текущего отзыва из JSON на сервере
-          var currentReviewNumber;
-          reviews.forEach(function(review, i) {
-            var currentReview = new ReviewData(review);
-            if (currentReview.getAuthorName() === this.getAuthorName()) {
-              currentReviewNumber = i;
-            }
-          }.bind(this));
-          reviews[currentReviewNumber]['review-rating'] = reviewRating;
-          console.log(reviews);
-          var postXhr = new XMLHttpRequest();
-          postXhr.open('POST', 'data/reviews.json');
-          postXhr.setRequestHeader('Content-type', 'application/json');
-          postXhr.onreadystatechange = function() {
-            if (postXhr.readyState === 4 && postXhr.status === 200) {
-              console.log('postXhr was sent');
-              console.log(JSON.parse(postXhr.responseText));
-            }
-          };
-          postXhr.send(JSON.stringify(reviews));
-        }
-      }).bind(this);
-      xhr.send();
     },
 
     /**
