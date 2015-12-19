@@ -35,7 +35,6 @@
 
     // При создании галереи вызывается метод, определяющий
     // изменение состояния хэша в адресной строке
-    this.restoreFromHash();
     window.addEventListener('hashchange', this._onHashChange);
   }
 
@@ -125,7 +124,6 @@
      * Показывает галерею
      */
     show: function() {
-      console.log('show');
       toggleClass(this.getElement(), 'invisible');
       // Установка слушателя кликов на крестике
       document.addEventListener('click', this._onCloseClick);
@@ -267,21 +265,16 @@
       var prevButton = this._getPrevButton();
       var nextButton = this._getNextButton();
 
-      console.log(typeof currentPhoto);
       // Если передана строка, то нужно найти фотографию или видео, соответствующие
       // этому адресу в массиве фотографий и видео
       if (typeof currentPhoto === 'string') {
-        console.log(currentPhoto);
         // Вычисление соответствующего элемента массива
         for (var i = 0; i < pictures.length; i++) {
-          console.log('inside for loop');
           if (getRelativeUrl(pictures[i].getUrl()) === currentPhoto) {
             currentPhoto = i;
           }
         }
       }
-
-      console.log(currentPhoto);
 
       // Показываем фотографию, если она находится в массиве фотографий и видео,
       // иначе закрываем галерею
@@ -338,7 +331,6 @@
         // Обновление блока .preview-number-total
         this._getPreviewNumberTotal().textContent = pictures.length.toString();
       } else {
-        console.log('hide');
         this.hide();
       }
     },
@@ -359,7 +351,6 @@
      * @private
      */
     _onHashChange: function() {
-      console.log('onhashchange');
       this.restoreFromHash();
     },
 
@@ -369,13 +360,11 @@
      */
     restoreFromHash: function() {
       var photo = location.hash.match(/#photo\/(\S+)/);
-      console.log('inside restorefromhash: ' + photo);
       if (photo) {
         photo = photo[1].indexOf('/') === 0 ? photo[1] : '/' + photo[1];
         this.show();
         this.setCurrentPicture(photo.toString());
       } else {
-        console.log('hide from hash');
         this.hide();
       }
     }

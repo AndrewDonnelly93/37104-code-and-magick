@@ -8,6 +8,7 @@
    * Собираем массив объектов Photo из photogallery
    * @type {*|Array}
    */
+
   var pictures = Array.prototype.map.call(document.querySelectorAll('.photogallery-image'), function(pic) {
     return pic.dataset.replacementVideo ?
       new Video(pic.dataset.replacementVideo) : new Photo(pic.querySelector('img').src);
@@ -21,6 +22,10 @@
 
   // Заполняем галерею картинками
   gallery.setPictures(pictures);
+
+  // При создании галереи вызывается метод, определяющий
+  // изменение состояния хэша в адресной строке
+  gallery.restoreFromHash();
 
   var galleryImages = document.querySelectorAll('.photogallery .photogallery-image');
 
