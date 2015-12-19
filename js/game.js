@@ -1,6 +1,6 @@
 'use strict';
 
-(function() {
+define(function() { //eslint-disable-line no-undef
 
   /**
   * Задает инициализацию скролла
@@ -872,4 +872,6 @@
   game.setGameStatus(window.Game.Verdict.INTRO);
 
   scrollDetecting();
-})();
+
+  return Game;
+});

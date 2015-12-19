@@ -1,8 +1,10 @@
-/* global toggleClass: true, Video: true, getRelativeUrl: true */
-
 'use strict';
 
-(function() {
+define([ //eslint-disable-line no-undef
+  'toggle-class',
+  'video',
+  'get-relative-url'
+], function(toggleClass, Video, getRelativeUrl) {
 
   /**
    * Создает объект типа 'Галерея'
@@ -370,8 +372,8 @@
     }
   };
 
-  window.Gallery = Gallery;
+  return Gallery;
 
-})();
+});
 
 

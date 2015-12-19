@@ -1,9 +1,11 @@
-/* global toggleClass: true, ReviewData: true, inherit: true */
 /* exported ReviewData */
 
 'use strict';
 
-(function() {
+define([ //eslint-disable-line no-undef
+  'toggle-class',
+  'inherit'
+], function(toggleClass, inherit) {
 
   /**
    * Конструктор данных отзыва
@@ -123,6 +125,7 @@
   /**
    * Конструктор отзыва
    * @param {ReviewData} reviewData
+   * @extends {ReviewData}
    * @constructor
    */
   var Review = function(reviewData) {
@@ -319,8 +322,7 @@
     this.getNegativeReviewButton().removeEventListener('click', this.onNegativeReviewClick);
   };
 
-  window.ReviewData = ReviewData;
+  return Review;
 
-  window.Review = Review;
-})();
+});
 

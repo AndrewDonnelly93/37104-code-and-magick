@@ -1,25 +1,11 @@
 /* global docCookies: true */
+/* exported define */
 
 'use strict';
 
-(function() {
-
-  /**
-   * Убирает класс или добавляет его
-   * @param {Element} element
-   * @param {string} className
-   * @param {boolean=} action
-   */
-  function toggleClass(element, className, action) {
-    if (action && element.className.indexOf(className) === -1) {
-      element.className = !element.className.length ? className :
-      element.className + ' ' + className;
-    } else if (!action && element.className.indexOf(className) !== -1) {
-      var classList = element.className.split(' ');
-      classList.splice(classList.indexOf(className), 1);
-      element.className = classList.join(' ');
-    }
-  }
+define([ //eslint-disable-line no-undef
+  'toggle-class'
+], function(toggleClass) {
 
   var formContainer = document.querySelector('.overlay-container');
   var formOpenButton = document.querySelector('.reviews-controls-new');
@@ -295,8 +281,10 @@
     createErrorNode: function(errorMessage, currentField) {
       var parent = currentField.parentElement;
       var children = parent.children;
+
       if (!parent.getElementsByClassName('form-error').length) {
         for (var i = 0; i < children.length; i++) {
+
           if (children[i].tagName === 'LABEL') {
             var error = document.createElement('span');
             error.className = 'review-form-label form-error';
@@ -304,6 +292,7 @@
             parent.insertBefore(error, children[i].nextSibling);
             break;
           }
+
         }
       }
     },
@@ -426,4 +415,4 @@
     }
   };
 
-})();
+});

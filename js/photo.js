@@ -1,10 +1,9 @@
-/* global Photo: true, Video: true, inherit: true */
 /* exported Photo */
-/* exported Video */
 
 'use strict';
 
-(function() {
+define(function() { //eslint-disable-line no-undef
+
   /**
    * Конструктор объекта Photo
    * @param url
@@ -35,21 +34,5 @@
 
   };
 
-  /**
-   * Конструктор объекта Video
-   * @param url
-   * @constructor
-   */
-  function Video(url) {
-    Photo.call(this, url);
-  }
-
-  /**
-   * Video объявляется наследником Photo
-   */
-  inherit(Video, Photo);
-
-  window.Photo = Photo;
-
-  window.Video = Video;
-})();
+  return Photo;
+});
