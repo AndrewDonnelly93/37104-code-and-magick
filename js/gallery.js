@@ -1,5 +1,4 @@
-/* global toggleClass: true, Video: true */
-
+/* global toggleClass: true, Video: true, getRelativeUrl: true */
 
 'use strict';
 
@@ -31,6 +30,13 @@
     this._pressNextButton = this._pressNextButton.bind(this);
     this.togglePlayVideo = this.togglePlayVideo.bind(this);
     this.setPictures = this.setPictures.bind(this);
+    this.restoreFromHash = this.restoreFromHash.bind(this);
+    this._onHashChange = this._onHashChange.bind(this);
+
+    // При создании галереи вызывается метод, определяющий
+    // изменение состояния хэша в адресной строке
+    this.restoreFromHash();
+    window.addEventListener('hashchange', this._onHashChange);
   }
 
   Gallery.prototype = {
@@ -119,6 +125,7 @@
      * Показывает галерею
      */
     show: function() {
+      console.log('show');
       toggleClass(this.getElement(), 'invisible');
       // Установка слушателя кликов на крестике
       document.addEventListener('click', this._onCloseClick);
@@ -140,6 +147,9 @@
       this._getPrevButton().removeEventListener('click', this._pressPrevButton);
       this._getNextButton().removeEventListener('click', this._pressNextButton);
       document.removeEventListener('keydown', this._onDocumentKeyDown);
+
+      // Очистка хэша адресной строки
+      history.pushState('', document.title, window.location.pathname);
     },
 
     /**
@@ -204,8 +214,8 @@
       var currentPicture = this._getCurrentImageNumber();
       if (currentPicture - 1 >= 0) {
         currentPicture -= 1;
-        this._setCurrentImageNumber(currentPicture);
-        this.setCurrentPicture(currentPicture);
+        // Меняем hash в адресной строке на #photo/<путь к фотографии>
+        location.hash = 'photo' + getRelativeUrl(this.getPictures()[currentPicture].getUrl());
       }
     },
 
@@ -215,12 +225,13 @@
      */
     _pressNextButton: function() {
       var currentPicture = this._getCurrentImageNumber();
+      var pictures = this.getPictures();
       // Если номер следующей фотографии меньше, чем длина массива
       // pictures, уменьшенная на 1, показываем следующую фотографию
-      if (currentPicture + 1 <= (this.getPictures().length - 1)) {
+      if (currentPicture + 1 <= (pictures.length - 1)) {
         currentPicture += 1;
-        this._setCurrentImageNumber(currentPicture);
-        this.setCurrentPicture(currentPicture);
+        // Меняем hash в адресной строке на #photo/<путь к фотографии>
+        location.hash = 'photo' + getRelativeUrl(this.getPictures()[currentPicture].getUrl());
       }
     },
 
@@ -247,64 +258,89 @@
      * отрисовывает ее в галерее, обновляя .overlay-gallery:
      * добавляет фото в .overlay-gallery-preview, обновляет блоки
      * .preview-number-current и .preview-number-total
-     * @param {number} number
+     * @param {number|string} currentPhoto
      */
-    setCurrentPicture: function(number) {
+    setCurrentPicture: function(currentPhoto) {
+
       var container = this._getPhotoContainer();
       var pictures = this.getPictures();
       var prevButton = this._getPrevButton();
       var nextButton = this._getNextButton();
 
-      switch (number) {
-        // Если текущая фотография является первой, показываем ее
-        // и скрываем левый контрол
-        case 0:
-          toggleClass(prevButton, 'invisible', true);
-          break;
-        // Если текущая фотография является последней, показываем ее
-        // и скрываем правый контрол
-        case pictures.length - 1:
-          toggleClass(nextButton, 'invisible', true);
-          break;
-        // Показываем оба контрола
-        default:
-          toggleClass(prevButton, 'invisible', false);
-          toggleClass(nextButton, 'invisible', false);
-          break;
+      console.log(typeof currentPhoto);
+      // Если передана строка, то нужно найти фотографию или видео, соответствующие
+      // этому адресу в массиве фотографий и видео
+      if (typeof currentPhoto === 'string') {
+        console.log(currentPhoto);
+        // Вычисление соответствующего элемента массива
+        for (var i = 0; i < pictures.length; i++) {
+          console.log('inside for loop');
+          if (getRelativeUrl(pictures[i].getUrl()) === currentPhoto) {
+            currentPhoto = i;
+          }
+        }
       }
 
-      // Это потребуется при вызове метода, если
-      // e.target - preview картинки на основной странице
-      if (this._getCurrentImageNumber() !== number) {
-        this._setCurrentImageNumber(number);
-      }
-      // Добавление фотографии в контейнер
-      // Сначала удаляются предыдущие изображения/видео
-      Array.prototype.forEach.call(container.children, function(item) {
-        document.removeEventListener('click', Gallery.togglePlayVideo);
-        container.removeChild(item);
-      });
-      // Создаем фотографию или видео
-      if (pictures[number] instanceof Video) {
-        var video = document.createElement('video');
-        var sourceMP4 = document.createElement('source');
-        sourceMP4.type = 'video/mp4';
-        sourceMP4.src = pictures[number].getUrl();
-        video.autoplay = true;
-        video.loop = true;
-        video.appendChild(sourceMP4);
-        // По клике на видео оно будет останавливаться или запускаться
-        document.addEventListener('click', this.togglePlayVideo);
-        container.appendChild(video);
+      console.log(currentPhoto);
+
+      // Показываем фотографию, если она находится в массиве фотографий и видео,
+      // иначе закрываем галерею
+      if (currentPhoto < pictures.length && typeof currentPhoto === 'number') {
+        switch (currentPhoto) {
+          // Если текущая фотография является первой, показываем ее
+          // и скрываем левый контрол
+          case 0:
+            toggleClass(prevButton, 'invisible', true);
+            break;
+          // Если текущая фотография является последней, показываем ее
+          // и скрываем правый контрол
+          case pictures.length - 1:
+            toggleClass(nextButton, 'invisible', true);
+            break;
+          // Показываем оба контрола
+          default:
+            toggleClass(prevButton, 'invisible', false);
+            toggleClass(nextButton, 'invisible', false);
+            break;
+        }
+
+        // Установка номера текущей фотографии
+        if (this._getCurrentImageNumber() !== currentPhoto) {
+          this._setCurrentImageNumber(currentPhoto);
+        }
+
+        // Добавление фотографии в контейнер
+        // Сначала удаляются предыдущие изображения/видео
+        Array.prototype.forEach.call(container.children, function(item) {
+          document.removeEventListener('click', Gallery.togglePlayVideo);
+          container.removeChild(item);
+        });
+
+        // Создаем фотографию или видео
+        if (pictures[currentPhoto] instanceof Video) {
+          var video = document.createElement('video');
+          var sourceMP4 = document.createElement('source');
+          sourceMP4.type = 'video/mp4';
+          sourceMP4.src = pictures[currentPhoto].getUrl();
+          video.autoplay = true;
+          video.loop = true;
+          video.appendChild(sourceMP4);
+          // По клике на видео оно будет останавливаться или запускаться
+          document.addEventListener('click', this.togglePlayVideo);
+          container.appendChild(video);
+        } else {
+          var photo = new Image();
+          photo.src = pictures[currentPhoto].getUrl();
+          container.appendChild(photo);
+        }
+        // Обновление блока .preview-number-current
+        this._getPreviewNumberCurrent().textContent = (currentPhoto + 1).toString();
+        // Обновление блока .preview-number-total
+        this._getPreviewNumberTotal().textContent = pictures.length.toString();
       } else {
-        var photo = new Image();
-        photo.src = pictures[number].getUrl();
-        container.appendChild(photo);
+        console.log('hide');
+        this.hide();
       }
-      // Обновление блока .preview-number-current
-      this._getPreviewNumberCurrent().textContent = (number + 1).toString();
-      // Обновление блока .preview-number-total
-      this._getPreviewNumberTotal().textContent = pictures.length.toString();
     },
 
     /**
@@ -314,6 +350,33 @@
     togglePlayVideo: function(e) {
       if (e.target.tagName === 'VIDEO') {
         return e.target.paused ? e.target.play() : e.target.pause();
+      }
+    },
+
+    /**
+     * Обработчик события hashchange, который будет показывать или
+     * прятать галерею на определенной фотографии в зависимости от содержимого хэша
+     * @private
+     */
+    _onHashChange: function() {
+      console.log('onhashchange');
+      this.restoreFromHash();
+    },
+
+    /**
+     * Показывает фотографию, если хэш в адресной строке соответствует адресу
+     * из массива фотографий и видео, прячет галерею, если таких фотографий нет
+     */
+    restoreFromHash: function() {
+      var photo = location.hash.match(/#photo\/(\S+)/);
+      console.log('inside restorefromhash: ' + photo);
+      if (photo) {
+        photo = photo[1].indexOf('/') === 0 ? photo[1] : '/' + photo[1];
+        this.show();
+        this.setCurrentPicture(photo.toString());
+      } else {
+        console.log('hide from hash');
+        this.hide();
       }
     }
   };
