@@ -10,14 +10,17 @@
     var SCROLL_TIMEOUT = 100;
     var clouds = document.querySelector('.header-clouds');
     var demo = document.querySelector('.demo');
-    var viewportHeight = window.innerHeight;
+
     window.addEventListener('scroll', function() {
-      clearTimeout(scrollTimeout);
+      if (scrollTimeout) {
+        clearTimeout(scrollTimeout);
+      }
+
       scrollTimeout = setTimeout(function() {
         // Если блок с игрой не виден в данный момент, то игра
         // ставится на паузу
         var demoCoords = demo.getBoundingClientRect();
-        if (!((demoCoords.top < viewportHeight) && (demoCoords.bottom >= 0))) {
+        if (!(demoCoords.top < window.innerHeight && demoCoords.bottom >= 0)) {
           game.setGameStatus(window.Game.Verdict.PAUSE);
         }
         // Координаты фона меняются только в том случае, если блок с облаками
