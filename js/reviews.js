@@ -1,4 +1,4 @@
-/* global Review: true, Gallery: true */
+/* global Review: true */
 
 'use strict';
 
@@ -40,11 +40,29 @@
     this.container = container;
     this.more = more;
     this.filteredReviews = [];
+    // Отрисованные отзывы
+    this.renderedReviews = [];
     this.getReviewsByAJAX();
     this.showMoreReviews();
   };
 
   ReviewsList.prototype = {
+
+    /**
+     * Устанавливает отрисованные отзывы
+     * @param {Array.<Review>} reviews
+     */
+    setRenderedReviews: function(reviews) {
+      this.renderedReviews = reviews;
+    },
+
+    /**
+     * Возвращает отрисованные отзывы
+     * @return {Array.<Review>}
+     */
+    getRenderedReviews: function() {
+      return this.renderedReviews;
+    },
 
     /**
      * Получение контейнера
@@ -182,12 +200,16 @@
         var currentPage = this.getCurrentPage();
         // Для отображения следующей порции отзывов нужно посмотреть, есть ли они
         // Страницы нумеруются с 0, поэтому вычитаем из потолка единицу
-        if (currentPage < (Math.ceil(this.getFilteredReviews().length / this.getPageSize())) - 1) {
-          toggleClass(getMoreBtn, 'invisible', false);
+        var pageCount = (Math.ceil(this.getFilteredReviews().length / this.getPageSize())) - 1;
+        if (currentPage < pageCount) {
+          // Предпоследняя страница
+          if (currentPage === (pageCount - 1)) {
+            toggleClass(getMoreBtn, 'invisible', true);
+          } else {
+            toggleClass(getMoreBtn, 'invisible', false);
+          }
           this.setCurrentPage(currentPage + 1);
           this.renderReviews();
-        } else {
-          toggleClass(getMoreBtn, 'invisible', true);
         }
       }).bind(this));
     },
@@ -216,7 +238,9 @@
      * Установка значения reviews у объекта, вызов рендеринга списка отзывов
      */
     setReviews: function(reviews) {
-      this.reviews = reviews;
+      this.reviews = reviews.map(function(review) {
+        return new Review(review);
+      });
       this.filterReviews(this.getActiveFilter(), true);
     },
 
@@ -237,45 +261,45 @@
       if ((this.getActiveFilter() === id) && !force) {
         return;
       }
-      var filteredReviews = this.reviews.slice(0);
+      var filteredReviews = this.getReviews().slice(0);
       switch (id) {
         case 'reviews-recent':
           // Выборка отзывов за прошедшие полгода
           filteredReviews = filteredReviews.filter(function(review) {
             var currentDate = new Date();
-            var reviewDate = Date.parse(review.date);
+            var reviewDate = Date.parse(review.getDate());
             var DAYS_TO_EXPIRE = 180;
             var dateToExpire = DAYS_TO_EXPIRE * 24 * 3600 * 1000;
             return (currentDate - reviewDate <= dateToExpire);
           });
           filteredReviews.sort(function(a, b) {
-            return new Date(b.date) - new Date(a.date);
+            return new Date(b.getDate()) - new Date(a.getDate());
           });
           break;
         case 'reviews-good':
           // Выборка отзывов с рейтингом не меньше 3
           // по убыванию рейтинга
           filteredReviews = filteredReviews.filter(function(review) {
-            return (review.rating >= 3);
+            return (review.getRating() >= 3);
           });
           filteredReviews.sort(function(a, b) {
-            return b.rating - a.rating;
+            return b.getRating() - a.getRating();
           });
           break;
         case 'reviews-bad':
           // Выборка отзывов с рейтингом не выше 2,
           // отсортированные по возрастанию рейтинга
           filteredReviews = filteredReviews.filter(function(review) {
-            return (review.rating <= 2);
+            return (review.getRating() <= 2);
           });
           filteredReviews.sort(function(a, b) {
-            return a.rating - b.rating;
+            return a.getRating() - b.getRating();
           });
           break;
         case 'reviews-popular':
           // Выборка, отсортированная по убыванию оценки отзыва (поле review-rating).
           filteredReviews.sort(function(a, b) {
-            return b['review-rating'] - a['review-rating'];
+            return b.getReviewRating() - a.getReviewRating();
           });
           break;
         case 'reviews-all':
@@ -294,24 +318,33 @@
      * @param {boolean=} replace При true очистка контейнера
      */
     renderReviews: function(replace) {
+      var renderedReviews = this.getRenderedReviews();
       var tempContainer = document.createDocumentFragment();
       var container = this.getContainer();
       // Очищение списка отзывов в контейнере
       if (replace) {
+        // Больше не работаем с DOM-элементом компоненты
         toggleClass(this.getMore(), 'invisible', false);
-        Array.prototype.forEach.call(container.querySelectorAll('.review'), function(review) {
-          container.removeChild(review);
-        });
+        var el;
+        // Удаляем отрисованные элементы из массива renderedReviews
+        // и из DOM
+        while ((el = renderedReviews.shift())) { //eslint-disable-line no-cond-assign
+          container.removeChild(el.getElement());
+          el.remove();
+        }
       }
       var PAGE_SIZE = this.getPageSize();
       var from = this.getCurrentPage() * PAGE_SIZE;
       var to = from + PAGE_SIZE;
       var reviews = this.getFilteredReviews().slice(from, to);
-      for (var i = 0; i < reviews.length; i++) {
-        var review = new Review(reviews[i]);
-        review.render();
-        tempContainer.appendChild(review.getElement());
-      }
+      this.setRenderedReviews(renderedReviews.concat(
+        reviews.map(function(review) {
+          var reviewElement = new Review(review);
+          reviewElement.render();
+          tempContainer.appendChild(reviewElement.getElement());
+          return reviewElement;
+        })
+      ));
       container.appendChild(tempContainer);
       // Показывает фильтры у отзывов после загрузки списка отзывов
       toggleClass(this.getFilters(), 'invisible');
@@ -327,24 +360,6 @@
   document.querySelector('.reviews-list'), document.querySelector('.reviews-controls-more'));
 
   reviewList.setCurrentFilter();
-
-  /**
-   * Создание текущей галереи
-   * @type {Gallery}
-   */
-  var gallery = new Gallery();
-
-  var galleryImages = document.querySelectorAll('.photogallery img');
-
-  /**
-   * Галерея показывается при клике на картинку
-   */
-  Array.prototype.forEach.call(galleryImages, function(image) {
-    image.addEventListener('click', function(e) {
-      e.stopPropagation();
-      gallery.show();
-    });
-  });
 
   window.toggleClass = toggleClass;
 })();
