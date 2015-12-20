@@ -31,6 +31,7 @@ define([ //eslint-disable-line no-undef
     this.setPictures = this.setPictures.bind(this);
     this.restoreFromHash = this.restoreFromHash.bind(this);
     this._onHashChange = this._onHashChange.bind(this);
+    this.changeLocationHash = this.changeLocationHash.bind(this);
 
     // При создании галереи вызывается метод, определяющий
     // изменение состояния хэша в адресной строке.
@@ -162,7 +163,7 @@ define([ //eslint-disable-line no-undef
 
     /**
      * Обработка событий нажатия на клавиши
-     * @param {Keyboard Event} e
+     * @param {KeyboardEvent} e
      * @private
      */
     _onDocumentKeyDown: function(e) {
@@ -209,8 +210,7 @@ define([ //eslint-disable-line no-undef
       var currentPicture = this._getCurrentImageNumber();
       if (currentPicture - 1 >= 0) {
         currentPicture -= 1;
-        // Меняем hash в адресной строке на #photo/<путь к фотографии>.
-        location.hash = 'photo' + getRelativeUrl(this.getPictures()[currentPicture].getUrl());
+        this.changeLocationHash(currentPicture);
       }
     },
 
@@ -225,8 +225,7 @@ define([ //eslint-disable-line no-undef
       // pictures, уменьшенная на 1, показываем следующую фотографию.
       if (currentPicture < pictures.length) {
         currentPicture += 1;
-        // Меняем hash в адресной строке на #photo/<путь к фотографии>
-        location.hash = 'photo' + getRelativeUrl(this.getPictures()[currentPicture].getUrl());
+        this.changeLocationHash(currentPicture);
       }
     },
 
@@ -269,6 +268,7 @@ define([ //eslint-disable-line no-undef
         for (var i = 0; i < pictures.length; i++) { // Вычисление соответствующего элемента массива.
           if (getRelativeUrl(pictures[i].getUrl()) === currentPhoto) {
             currentPhoto = i;
+            break;
           }
         }
 
@@ -354,10 +354,19 @@ define([ //eslint-disable-line no-undef
       if (photo) {
         photo = photo[1].indexOf('/') === 0 ? photo[1] : '/' + photo[1];
         this.show();
-        this.setCurrentPicture(photo.toString());
+        this.setCurrentPicture(photo);
       } else {
         this.hide();
       }
+    },
+
+    /**
+     * Изменение хэша у объекта location по номеру текущей фотографии
+     * @param {number} currentPicture
+     */
+    changeLocationHash: function(currentPicture) {
+      // Меняем hash в адресной строке на #photo/<путь к фотографии>.
+      location.hash = 'photo' + getRelativeUrl(this.getPictures()[currentPicture].getUrl());
     }
   };
 

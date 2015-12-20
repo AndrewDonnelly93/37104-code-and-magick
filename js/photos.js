@@ -3,9 +3,8 @@
 define([ //eslint-disable-line no-undef
   'photo',
   'video',
-  'gallery',
-  'get-relative-url'
-], function(Photo, Video, Gallery, getRelativeUrl) {
+  'gallery'
+], function(Photo, Video, Gallery) {
 
   var galleryImages = document.querySelectorAll('.photogallery-image');
 
@@ -38,8 +37,7 @@ define([ //eslint-disable-line no-undef
   Array.prototype.forEach.call(galleryImages, function(image, i) {
     image.addEventListener('click', function(e) {
       e.preventDefault();
-      var url = getRelativeUrl(gallery.getPictures()[i].getUrl());
-      location.hash = 'photo' + url; // Меняем hash в адресной строке на #photo/<путь к фотографии>.
+      gallery.changeLocationHash(i);
     });
   });
 
