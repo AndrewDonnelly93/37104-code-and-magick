@@ -1,6 +1,6 @@
 'use strict';
 
-define([ //eslint-disable-line no-undef
+define([
   'toggle-class',
   'video',
   'get-relative-url'
@@ -223,7 +223,7 @@ define([ //eslint-disable-line no-undef
       var pictures = this.getPictures();
       // Если номер следующей фотографии меньше, чем длина массива
       // pictures, уменьшенная на 1, показываем следующую фотографию.
-      if (currentPicture < pictures.length) {
+      if (currentPicture < pictures.length - 1) {
         currentPicture += 1;
         this.changeLocationHash(currentPicture);
       }
@@ -231,7 +231,7 @@ define([ //eslint-disable-line no-undef
 
     /**
      * Передает в галерею фотографии.
-     * @param {Array.<Photo|Video>} photos
+     * @param {Array.<Photo>} photos
      */
     setPictures: function(photos) {
       this.pictures = this.pictures.concat(photos);
@@ -248,18 +248,13 @@ define([ //eslint-disable-line no-undef
     },
 
     /**
-     * Берет фотографию из массива фотографий,
-     * отрисовывает ее в галерее, обновляя .overlay-gallery:
-     * добавляет фото в .overlay-gallery-preview, обновляет блоки
-     * .preview-number-current и .preview-number-total.
+     * Определяет номер текущей фотографии или видео в массиве
+     * фотографий и видео, устанавливает ее номер и вызывает
+     * отрисовку, если он корректен.
      * @param {number|string} currentPhoto
      */
     setCurrentPicture: function(currentPhoto) {
-
-      var container = this._getPhotoContainer();
       var pictures = this.getPictures();
-      var prevButton = this._getPrevButton();
-      var nextButton = this._getNextButton();
 
       // Если передана строка, то нужно найти фотографию или видео, соответствующие
       // этому адресу в массиве фотографий и видео.
@@ -276,54 +271,70 @@ define([ //eslint-disable-line no-undef
 
       // Показываем фотографию, если она находится в массиве фотографий и видео,
       // иначе закрываем галерею.
-      if (currentPhoto < pictures.length && typeof currentPhoto === 'number') {
+      if (currentPhoto >= 0 && currentPhoto < pictures.length && typeof currentPhoto === 'number') {
 
-        // Если текущая фотография является первой, показываем ее
-        // и скрываем левый контрол.
-        toggleClass(prevButton, 'invisible', currentPhoto === 0);
+        // Установка номера текущей фотографии.
+        this._setCurrentImageNumber(currentPhoto);
+        this._renderPicture(currentPhoto);
 
-        // Если текущая фотография является последней, показываем ее
-        // и скрываем правый контрол.
-        toggleClass(nextButton, 'invisible', currentPhoto === pictures.length - 1);
-
-        if (this._getCurrentImageNumber() !== currentPhoto) { // Установка номера текущей фотографии.
-          this._setCurrentImageNumber(currentPhoto);
-        }
-
-        // Добавление фотографии в контейнер.
-        // Сначала удаляются предыдущие изображения/видео.
-        Array.prototype.forEach.call(container.children, function(item) {
-          if (item.tagName === 'VIDEO') {
-            document.removeEventListener('click', Gallery.togglePlayVideo);
-          }
-          if (item.tagName === 'VIDEO' || item.tagName === 'IMG') {
-            container.removeChild(item);
-          }
-        });
-
-        // Создаем фотографию или видео.
-        if (pictures[currentPhoto] instanceof Video) {
-          var video = document.createElement('video');
-          var sourceMP4 = document.createElement('source');
-          sourceMP4.type = 'video/mp4';
-          sourceMP4.src = pictures[currentPhoto].getUrl();
-          video.autoplay = true;
-          video.loop = true;
-          video.appendChild(sourceMP4);
-          // По клике на видео оно будет останавливаться или запускаться.
-          document.addEventListener('click', this.togglePlayVideo);
-          container.appendChild(video);
-        } else {
-          var photo = new Image();
-          photo.src = pictures[currentPhoto].getUrl();
-          container.appendChild(photo);
-        }
-
-        // Обновление блока .preview-number-current.
-        this._getPreviewNumberCurrent().textContent = (currentPhoto + 1).toString();
       } else {
         this.hide();
       }
+    },
+
+    /**
+     * Берет фотографию из массива фотографий,
+     * отрисовывает ее в галерее, обновляя .overlay-gallery:
+     * добавляет фото в .overlay-gallery-preview, обновляет блок
+     * .preview-number-current.
+     * @param {number} currentPhoto
+     * @private
+     */
+    _renderPicture: function(currentPhoto) {
+
+      var container = this._getPhotoContainer();
+      var pictures = this.getPictures();
+
+      // Если текущая фотография является первой, показываем ее
+      // и скрываем левый контрол.
+      toggleClass(this._getPrevButton(), 'invisible', currentPhoto === 0);
+
+      // Если текущая фотография является последней, показываем ее
+      // и скрываем правый контрол.
+      toggleClass(this._getNextButton(), 'invisible', currentPhoto === pictures.length - 1);
+
+      // Добавление фотографии в контейнер.
+      // Сначала удаляются предыдущие изображения/видео.
+      Array.prototype.forEach.call(container.children, function(item) {
+        if (item.tagName === 'VIDEO') {
+          document.removeEventListener('click', this.togglePlayVideo);
+        }
+        if (item.tagName === 'VIDEO' || item.tagName === 'IMG') {
+          container.removeChild(item);
+        }
+      }.bind(this));
+
+      // Создаем фотографию или видео.
+      if (pictures[currentPhoto] instanceof Video) {
+        var video = document.createElement('video');
+        var sourceMP4 = document.createElement('source');
+        sourceMP4.type = 'video/mp4';
+        sourceMP4.src = pictures[currentPhoto].getUrl();
+        video.autoplay = true;
+        video.loop = true;
+        video.appendChild(sourceMP4);
+        // По клике на видео оно будет останавливаться или запускаться.
+        document.addEventListener('click', this.togglePlayVideo);
+        container.appendChild(video);
+      } else {
+        var photo = new Image();
+        photo.src = pictures[currentPhoto].getUrl();
+        container.appendChild(photo);
+      }
+
+      // Обновление блока .preview-number-current.
+      this._getPreviewNumberCurrent().textContent = (currentPhoto + 1).toString();
+
     },
 
     /**
@@ -331,6 +342,7 @@ define([ //eslint-disable-line no-undef
      * @param {MouseEvent} e
      */
     togglePlayVideo: function(e) {
+      console.log(this);
       if (e.target.tagName === 'VIDEO') {
         return e.target.paused ? e.target.play() : e.target.pause();
       }

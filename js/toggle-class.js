@@ -2,7 +2,7 @@
 
 'use strict';
 
-define(function() { //eslint-disable-line no-undef
+define(function() {
 
   /**
    * Убирает класс или добавляет его.

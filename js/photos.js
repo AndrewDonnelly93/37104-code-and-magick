@@ -1,6 +1,6 @@
 'use strict';
 
-define([ //eslint-disable-line no-undef
+define([
   'photo',
   'video',
   'gallery'

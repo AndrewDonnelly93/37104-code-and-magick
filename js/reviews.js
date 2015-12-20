@@ -1,10 +1,10 @@
 'use strict';
 
-requirejs.config({ //eslint-disable-line no-undef
+requirejs.config({
   baseUrl: 'js'
 });
 
-define([ //eslint-disable-line no-undef
+define([
   'review',
   'toggle-class',
   'game',
@@ -173,7 +173,7 @@ define([ //eslint-disable-line no-undef
 
     /**
      * Установка списка отфильтрованных отзывов.
-     * @param {Array.<Object>} reviews
+     * @param {Array.<Review>} reviews
      */
     setFilteredReviews: function(reviews) {
       this.filteredReviews = reviews;
@@ -327,7 +327,7 @@ define([ //eslint-disable-line no-undef
         var el;
         // Удаляем отрисованные элементы из массива renderedReviews
         // и из DOM.
-        while ((el = renderedReviews.shift())) { //eslint-disable-line no-cond-assign
+        while ((el = renderedReviews.shift())) {
           container.removeChild(el.getElement());
           el.remove();
         }

@@ -2,7 +2,7 @@
 
 'use strict';
 
-define([ //eslint-disable-line no-undef
+define([
   'inherit',
   'photo'
 ], function(inherit, Photo) {

@@ -1,6 +1,6 @@
 'use strict';
 
-define(function() { //eslint-disable-line no-undef
+define(function() {
 
   /** Задает инициализацию скролла. */
   function scrollDetecting() {
@@ -427,14 +427,14 @@ define(function() { //eslint-disable-line no-undef
     /**
      * Получение сообщения в виде массива из строк, а также высоты сообщения.
      * @param {string} msg
-     * @param {number} messageWidth
+     * @param {number} MESSAGE_WIDTH
      * @param {number} LINE_HEIGHT
      * @param {number} FONT_SIZE
      * @param {string} FONT_FAMILY
      * @return {Object}
      * @private
      */
-    _getMessage: function(msg, messageWidth, LINE_HEIGHT, FONT_SIZE, FONT_FAMILY) {
+    _getMessage: function(msg, MESSAGE_WIDTH, LINE_HEIGHT, FONT_SIZE, FONT_FAMILY) {
       var text = msg.split(' ');
       var line = '';
       this.ctx.font = FONT_SIZE + 'px ' + FONT_FAMILY;
@@ -449,7 +449,7 @@ define(function() { //eslint-disable-line no-undef
         var testWidth = this.ctx.measureText(testLine).width;
         // Если длина строки с новым словом превышает установленную длину сообщения,
         // строка сохраняется в массив без нового слова, с него начинается новая строка.
-        if (testWidth > messageWidth) {
+        if (testWidth > MESSAGE_WIDTH) {
           messageAsArray.message.push(line);
           messageAsArray.messageHeight += LINE_HEIGHT;
           line = text[i] + ' ';
@@ -516,7 +516,7 @@ define(function() { //eslint-disable-line no-undef
 
       // Насколько ширина сообщения будет меньше ширины прямоугольника.
       var HORIZONTAL_MESSAGE_OFFSET = 45;
-      var messageWidth = RECTANGLE_WIDTH - HORIZONTAL_MESSAGE_OFFSET;
+      var MESSAGE_WIDTH = RECTANGLE_WIDTH - HORIZONTAL_MESSAGE_OFFSET;
 
       // Задание стиля для сообшения
       var FONT_SIZE = 16;
@@ -525,7 +525,7 @@ define(function() { //eslint-disable-line no-undef
 
       // Получение сообщения в виде массива строк, подогнанных под ширину
       // прямоугольника
-      var messageAsArray = this._getMessage(msg, messageWidth, LINE_HEIGHT, FONT_SIZE, FONT_FAMILY);
+      var messageAsArray = this._getMessage(msg, MESSAGE_WIDTH, LINE_HEIGHT, FONT_SIZE, FONT_FAMILY);
 
       // Вычисление высоты прямоугольника и координаты по оси Y
       // Верхний отступ сообщения от границ прямоугольника

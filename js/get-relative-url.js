@@ -2,7 +2,7 @@
 
 'use strict';
 
-define(function() { //eslint-disable-line no-undef
+define(function() {
 
   /**
    * Получение относительного адреса из абсолютного.
@@ -12,7 +12,7 @@ define(function() { //eslint-disable-line no-undef
    * На выходе:
    * /img/screenshots/2.png
    * @param absoluteUrl
-   * @return {*}
+   * @return {string}
    */
   function getRelativeUrl(absoluteUrl) {
     var pathArray = window.location.pathname.split('/');

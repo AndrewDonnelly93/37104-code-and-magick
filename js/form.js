@@ -1,9 +1,6 @@
-/* global docCookies: true */
-/* exported define */
-
 'use strict';
 
-define([ //eslint-disable-line no-undef
+define([
   'toggle-class'
 ], function(toggleClass) {
 
@@ -28,7 +25,7 @@ define([ //eslint-disable-line no-undef
    * @return {boolean}
    */
   function checkRequiredField(element) {
-    return (typeof element === 'object') ?
+    return (typeof element === 'object' && 'value' in element) ?
        element.value.length !== 0 : element.length !== 0;
   }
 
@@ -333,7 +330,7 @@ define([ //eslint-disable-line no-undef
 
     /**
      * Валидация ввода отзыва в форму.
-     * @param {boolean} action - нужно ли проверять на обязательность.
+     * @param {boolean=} action - нужно ли проверять на обязательность.
      */
     validReview: function(action) {
 
