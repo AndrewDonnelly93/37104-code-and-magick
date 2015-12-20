@@ -73,8 +73,10 @@
         toggleClass(container.parentElement, 'review-load-failure', true);
       };
 
-      // Пока длится загрузка файла, к reviews добавлятся класс
-      // reviews-list-loading
+      /**
+       * Пока длится загрузка файла, к reviews добавлятся класс
+       * reviews-list-loading
+       */
       xhr.onreadystatechange = function() {
         if (xhr.readyState < 4) {
           toggleClass(container, 'invisible', true);
@@ -88,12 +90,21 @@
         }
       };
 
+      /**
+       * При ошибке в процессе загрузки отзыву добавляется класс
+       * review-load-failure
+       */
       xhr.onerror = function() {
         toggleClass(container.parentElement, 'reviews-list-loading');
         toggleClass(container, 'invisible', true);
         toggleClass(container.parentElement, 'review-load-failure', true);
       };
 
+      /**
+       * После загрузки данных по AJAX список отзывов записывается
+       * в прототип ReviewsList
+       * @type {function(this:ReviewsList)}
+       */
       xhr.onload = (function(e) {
         toggleClass(container, 'invisible');
         toggleClass(container.parentElement, 'reviews-list-loading');
@@ -166,13 +177,17 @@
      * Установка обработчика событий по клику на кнопку 'еще отзывы'
      */
     showMoreReviews: function() {
-      this.getMore().addEventListener('click', (function() {
+      var getMoreBtn = this.getMore();
+      getMoreBtn.addEventListener('click', (function() {
         var currentPage = this.getCurrentPage();
         // Для отображения следующей порции отзывов нужно посмотреть, есть ли они
         // Страницы нумеруются с 0, поэтому вычитаем из потолка единицу
         if (currentPage < (Math.ceil(this.getFilteredReviews().length / this.getPageSize())) - 1) {
+          toggleClass(getMoreBtn, 'invisible', false);
           this.setCurrentPage(currentPage + 1);
           this.renderReviews();
+        } else {
+          toggleClass(getMoreBtn, 'invisible', true);
         }
       }).bind(this));
     },
@@ -283,6 +298,7 @@
       var container = this.getContainer();
       // Очищение списка отзывов в контейнере
       if (replace) {
+        toggleClass(this.getMore(), 'invisible', false);
         Array.prototype.forEach.call(container.querySelectorAll('.review'), function(review) {
           container.removeChild(review);
         });
@@ -303,6 +319,10 @@
 
   };
 
+  /**
+   * Создание нового объекта - списка отзывов
+   * @type {ReviewsList}
+   */
   var reviewList = new ReviewsList(document.querySelector('.reviews-filter'),
   document.querySelector('.reviews-list'), document.querySelector('.reviews-controls-more'));
 
@@ -316,6 +336,9 @@
 
   var galleryImages = document.querySelectorAll('.photogallery img');
 
+  /**
+   * Галерея показывается при клике на картинку
+   */
   Array.prototype.forEach.call(galleryImages, function(image) {
     image.addEventListener('click', function(e) {
       e.stopPropagation();

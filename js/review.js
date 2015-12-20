@@ -31,6 +31,7 @@
     _getData: function() {
       return this._data;
     },
+
     /**
      * Получение одного отзыва
      * @returns {Element}

@@ -432,6 +432,7 @@
      * @param {number} lineHeight
      * @param {number} fontSize
      * @param {string} fontFamily
+     * @return {Object}
      * @private
      */
     _getMessageAsArrayOfStrings: function(msg, messageWidth, lineHeight, fontSize, fontFamily) {
@@ -469,6 +470,7 @@
      * @param {object} messageHeight
      * @param {number} verticalMessageOffset
      * @param {number} offsetLine
+     * @return {Object}
      * @private
      */
     _calculateRectangleData: function(messageHeight, verticalMessageOffset, offsetLine) {
@@ -553,6 +555,7 @@
 
     /**
      * Отрисовка экрана паузы.
+     * @private
      */
     _drawPauseScreen: function() {
       var msg;
