@@ -6,9 +6,10 @@ define([ //eslint-disable-line no-undef
   'inherit',
   'photo'
 ], function(inherit, Photo) {
+
   /**
-   * Конструктор объекта Video
-   * @param url
+   * Конструктор объекта Video.
+   * @param {string} url
    * @extends {Photo}
    * @constructor
    */
@@ -16,9 +17,7 @@ define([ //eslint-disable-line no-undef
     Photo.call(this, url);
   }
 
-  /**
-   * Video объявляется наследником Photo
-   */
+  /** Video объявляется наследником Photo. */
   inherit(Video, Photo);
 
   return Video;

@@ -7,43 +7,40 @@ define([ //eslint-disable-line no-undef
 ], function(toggleClass, Video, getRelativeUrl) {
 
   /**
-   * Создает объект типа 'Галерея'
+   * Создает объект типа 'Галерея'.
    * @constructor
    */
   function Gallery() {
     this.element = document.querySelector('.overlay-gallery');
-    // контейнер, в котором хранится фотография
-    this.photoContainer = document.querySelector('.overlay-gallery-preview');
-    // номер текущей фотографии
-    this.previewNumberCurrent = document.querySelector('.preview-number-current');
-    // количество всех фотографий
-    this.previewNumberTotal = document.querySelector('.preview-number-total');
+    this.photoContainer = document.querySelector('.overlay-gallery-preview'); // Контейнер, в котором хранится фотография.
+    this.previewNumberCurrent = document.querySelector('.preview-number-current');  // Номер текущей фотографии.
+    this.previewNumberTotal = document.querySelector('.preview-number-total');  // Количество всех фотографий.
     this._closeButton = document.querySelector('.overlay-gallery-close');
     this._prevButton = document.querySelector('.overlay-gallery-control-left');
     this._nextButton = document.querySelector('.overlay-gallery-control-right');
-    // номер текущего изображения
-    this._currentImageNumber = 0;
+
+    this._currentImageNumber = 0; // Номер текущего изображения.
     this.pictures = [];
     this.show = this.show.bind(this);
     this.hide = this.hide.bind(this);
     this._onCloseClick = this._onCloseClick.bind(this);
     this._onDocumentKeyDown = this._onDocumentKeyDown.bind(this);
-    this._pressPrevButton = this._pressPrevButton.bind(this);
-    this._pressNextButton = this._pressNextButton.bind(this);
+    this._onPrevButtonPress = this._onPrevButtonPress.bind(this);
+    this._onNextButtonPress = this._onNextButtonPress.bind(this);
     this.togglePlayVideo = this.togglePlayVideo.bind(this);
     this.setPictures = this.setPictures.bind(this);
     this.restoreFromHash = this.restoreFromHash.bind(this);
     this._onHashChange = this._onHashChange.bind(this);
 
     // При создании галереи вызывается метод, определяющий
-    // изменение состояния хэша в адресной строке
+    // изменение состояния хэша в адресной строке.
     window.addEventListener('hashchange', this._onHashChange);
   }
 
   Gallery.prototype = {
 
     /**
-     * Отдает номер текущего изображения
+     * Отдает номер текущего изображения.
      * @return {number}
      * @private
      */
@@ -52,7 +49,7 @@ define([ //eslint-disable-line no-undef
     },
 
     /**
-     * Устанавливает номер текущего изображения
+     * Устанавливает номер текущего изображения.
      * @param {number} number
      * @private
      */
@@ -61,7 +58,7 @@ define([ //eslint-disable-line no-undef
     },
 
     /**
-     * Отдает оверлей галереи
+     * Отдает оверлей галереи.
      * @return {Element}
      */
     getElement: function() {
@@ -69,8 +66,8 @@ define([ //eslint-disable-line no-undef
     },
 
     /**
-     * Отдает контейнер, в котором находится фотография
-     * @return {HTMLElement|*}
+     * Отдает контейнер, в котором находится фотография.
+     * @return {HTMLElement}
      * @private
      */
     _getPhotoContainer: function() {
@@ -78,8 +75,8 @@ define([ //eslint-disable-line no-undef
     },
 
     /**
-     * Отдает контейнер, в котором находится номер текущей фотографии
-     * @return {HTMLElement|*}
+     * Отдает контейнер, в котором находится номер текущей фотографии.
+     * @return {HTMLElement}
      * @private
      */
     _getPreviewNumberCurrent: function() {
@@ -87,8 +84,8 @@ define([ //eslint-disable-line no-undef
     },
 
     /**
-     * Отдает контейнер, в котором находится количество всех фотографий
-     * @return {HTMLElement|*}
+     * Отдает контейнер, в котором находится количество всех фотографий.
+     * @return {HTMLElement}
      * @private
      */
     _getPreviewNumberTotal: function() {
@@ -96,69 +93,65 @@ define([ //eslint-disable-line no-undef
     },
 
     /**
-     * Отдает крестик для закрытия галереи
-     * @private
+     * Отдает крестик для закрытия галереи.
      * @return {Element}
+     * @private
      */
     _getCloseButton: function() {
       return this._closeButton;
     },
 
     /**
-     * Отдает левый контрол
-     * @private
+     * Отдает левый контрол.
      * @return {Element}
+     * @private
      */
     _getPrevButton: function() {
       return this._prevButton;
     },
 
     /**
-     * Отдает правый контрол
-     * @private
+     * Отдает правый контрол.
      * @return {Element}
+     * @private
      */
     _getNextButton: function() {
       return this._nextButton;
     },
 
-    /**
-     * Показывает галерею
-     */
+    /** Показывает галерею. */
     show: function() {
+
       toggleClass(this.getElement(), 'invisible');
-      // Установка слушателя кликов на крестике
-      document.addEventListener('click', this._onCloseClick);
-      // Установка слушатели событий на клики по контролам
-      this._getPrevButton().addEventListener('click', this._pressPrevButton);
-      this._getNextButton().addEventListener('click', this._pressNextButton);
-      // Закрываем галерею по клику на esc
-      document.addEventListener('keydown', this._onDocumentKeyDown);
+      document.addEventListener('click', this._onCloseClick); // Установка слушателя кликов на крестике.
+      // Установка слушатели событий на клики по контролам.
+      this._getPrevButton().addEventListener('click', this._onPrevButtonPress);
+      this._getNextButton().addEventListener('click', this._onNextButtonPress);
+      document.addEventListener('keydown', this._onDocumentKeyDown);  // Обработка нажатий на клавиши.
+
     },
 
-    /**
-     * Прячет галерею
-     */
+    /** Прячет галерею. */
     hide: function() {
+
       toggleClass(this.getElement(), 'invisible', true);
-      // Удаление слушателя событий с крестика
-      document.removeEventListener('click', this._onCloseClick);
-      // Удаление слушателей событий кликов по контролам
-      this._getPrevButton().removeEventListener('click', this._pressPrevButton);
-      this._getNextButton().removeEventListener('click', this._pressNextButton);
+      document.removeEventListener('click', this._onCloseClick);  // Удаление слушателя событий с крестика.
+      // Удаление слушателей событий кликов по контролам.
+      this._getPrevButton().removeEventListener('click', this._onPrevButtonPress);
+      this._getNextButton().removeEventListener('click', this._onNextButtonPress);
       document.removeEventListener('keydown', this._onDocumentKeyDown);
 
-      // Очистка хэша адресной строки
-      history.pushState('', document.title, window.location.pathname);
+      history.pushState('', document.title, window.location.pathname);  // Очистка хэша адресной строки.
+
     },
 
     /**
-     * Обработчик события клика на крестике
+     * Обработчик события клика на крестике.
      * @private
      */
     _onCloseClick: function(e) {
-      // По клику на document галерея закрывается, если этот элемент не принадлежит самой галерее
-      // По клику на крестик галерея также закрывается
+      // По клику на document галерея закрывается, если этот элемент не принадлежит самой галерее.
+      // По клику на крестик галерея также закрывается.
       if (!(e.target === this._getCloseButton())) {
         if (this.contains(this.getElement(), e.target)) {
           return false;
@@ -168,7 +161,8 @@ define([ //eslint-disable-line no-undef
     },
 
     /**
-     * Закрывает галерею по клику на esc
+     * Обработка событий нажатия на клавиши
+     * @param {Keyboard Event} e
      * @private
      */
     _onDocumentKeyDown: function(e) {
@@ -179,11 +173,11 @@ define([ //eslint-disable-line no-undef
           break;
         // правая стрелка
         case 39:
-          this._pressNextButton();
+          this._onNextButtonPress();
           break;
         // левая стрелка
         case 37:
-          this._pressPrevButton();
+          this._onPrevButtonPress();
           break;
         default:
           break;
@@ -192,9 +186,10 @@ define([ //eslint-disable-line no-undef
 
     /**
      * Проверка, находится ли элемент, на котором произошло событие,
-     * в контейнере
-     * @param container
-     * @param element
+     * в контейнере.
+     * @param {Element} container
+     * @param {Element} element
+     * @return {boolean}
      */
     contains: function(container, element) {
       if (container === element) {
@@ -207,28 +202,28 @@ define([ //eslint-disable-line no-undef
     },
 
     /**
-     * Обработчик нажатия на контрол для перемещения влево
+     * Обработчик нажатия на контрол для перемещения влево.
      * @private
      */
-    _pressPrevButton: function() {
+    _onPrevButtonPress: function() {
       var currentPicture = this._getCurrentImageNumber();
       if (currentPicture - 1 >= 0) {
         currentPicture -= 1;
-        // Меняем hash в адресной строке на #photo/<путь к фотографии>
+        // Меняем hash в адресной строке на #photo/<путь к фотографии>.
         location.hash = 'photo' + getRelativeUrl(this.getPictures()[currentPicture].getUrl());
       }
     },
 
     /**
-     * Обработчик нажатия на контрол для перемещения вправо
+     * Обработчик нажатия на контрол для перемещения вправо.
      * @private
      */
-    _pressNextButton: function() {
+    _onNextButtonPress: function() {
       var currentPicture = this._getCurrentImageNumber();
       var pictures = this.getPictures();
       // Если номер следующей фотографии меньше, чем длина массива
-      // pictures, уменьшенная на 1, показываем следующую фотографию
-      if (currentPicture + 1 <= (pictures.length - 1)) {
+      // pictures, уменьшенная на 1, показываем следующую фотографию.
+      if (currentPicture < pictures.length) {
         currentPicture += 1;
         // Меняем hash в адресной строке на #photo/<путь к фотографии>
         location.hash = 'photo' + getRelativeUrl(this.getPictures()[currentPicture].getUrl());
@@ -236,18 +231,18 @@ define([ //eslint-disable-line no-undef
     },
 
     /**
-     * Передает в галерею фотографии
+     * Передает в галерею фотографии.
      * @param {Array.<Photo|Video>} photos
      */
     setPictures: function(photos) {
-      photos.forEach((function(photo) {
-        this.pictures.push(photo);
-      }).bind(this));
+      this.pictures = this.pictures.concat(photos);
+      // Обновление блока .preview-number-total.
+      this._getPreviewNumberTotal().textContent = this.pictures.length.toString();
     },
 
     /**
-     * Отдает массив фотографий
-     * @returns {Array}
+     * Отдает массив фотографий.
+     * @return {Array}
      */
     getPictures: function() {
       return this.pictures;
@@ -257,7 +252,7 @@ define([ //eslint-disable-line no-undef
      * Берет фотографию из массива фотографий,
      * отрисовывает ее в галерее, обновляя .overlay-gallery:
      * добавляет фото в .overlay-gallery-preview, обновляет блоки
-     * .preview-number-current и .preview-number-total
+     * .preview-number-current и .preview-number-total.
      * @param {number|string} currentPhoto
      */
     setCurrentPicture: function(currentPhoto) {
@@ -268,50 +263,45 @@ define([ //eslint-disable-line no-undef
       var nextButton = this._getNextButton();
 
       // Если передана строка, то нужно найти фотографию или видео, соответствующие
-      // этому адресу в массиве фотографий и видео
+      // этому адресу в массиве фотографий и видео.
       if (typeof currentPhoto === 'string') {
-        // Вычисление соответствующего элемента массива
-        for (var i = 0; i < pictures.length; i++) {
+
+        for (var i = 0; i < pictures.length; i++) { // Вычисление соответствующего элемента массива.
           if (getRelativeUrl(pictures[i].getUrl()) === currentPhoto) {
             currentPhoto = i;
           }
         }
+
       }
 
       // Показываем фотографию, если она находится в массиве фотографий и видео,
-      // иначе закрываем галерею
+      // иначе закрываем галерею.
       if (currentPhoto < pictures.length && typeof currentPhoto === 'number') {
-        switch (currentPhoto) {
-          // Если текущая фотография является первой, показываем ее
-          // и скрываем левый контрол
-          case 0:
-            toggleClass(prevButton, 'invisible', true);
-            break;
-          // Если текущая фотография является последней, показываем ее
-          // и скрываем правый контрол
-          case pictures.length - 1:
-            toggleClass(nextButton, 'invisible', true);
-            break;
-          // Показываем оба контрола
-          default:
-            toggleClass(prevButton, 'invisible', false);
-            toggleClass(nextButton, 'invisible', false);
-            break;
-        }
 
-        // Установка номера текущей фотографии
-        if (this._getCurrentImageNumber() !== currentPhoto) {
+        // Если текущая фотография является первой, показываем ее
+        // и скрываем левый контрол.
+        toggleClass(prevButton, 'invisible', currentPhoto === 0);
+
+        // Если текущая фотография является последней, показываем ее
+        // и скрываем правый контрол.
+        toggleClass(nextButton, 'invisible', currentPhoto === pictures.length - 1);
+
+        if (this._getCurrentImageNumber() !== currentPhoto) { // Установка номера текущей фотографии.
           this._setCurrentImageNumber(currentPhoto);
         }
 
-        // Добавление фотографии в контейнер
-        // Сначала удаляются предыдущие изображения/видео
+        // Добавление фотографии в контейнер.
+        // Сначала удаляются предыдущие изображения/видео.
         Array.prototype.forEach.call(container.children, function(item) {
-          document.removeEventListener('click', Gallery.togglePlayVideo);
-          container.removeChild(item);
+          if (item.tagName === 'VIDEO') {
+            document.removeEventListener('click', Gallery.togglePlayVideo);
+          }
+          if (item.tagName === 'VIDEO' || item.tagName === 'IMG') {
+            container.removeChild(item);
+          }
         });
 
-        // Создаем фотографию или видео
+        // Создаем фотографию или видео.
         if (pictures[currentPhoto] instanceof Video) {
           var video = document.createElement('video');
           var sourceMP4 = document.createElement('source');
@@ -320,7 +310,7 @@ define([ //eslint-disable-line no-undef
           video.autoplay = true;
           video.loop = true;
           video.appendChild(sourceMP4);
-          // По клике на видео оно будет останавливаться или запускаться
+          // По клике на видео оно будет останавливаться или запускаться.
           document.addEventListener('click', this.togglePlayVideo);
           container.appendChild(video);
         } else {
@@ -328,18 +318,17 @@ define([ //eslint-disable-line no-undef
           photo.src = pictures[currentPhoto].getUrl();
           container.appendChild(photo);
         }
-        // Обновление блока .preview-number-current
+
+        // Обновление блока .preview-number-current.
         this._getPreviewNumberCurrent().textContent = (currentPhoto + 1).toString();
-        // Обновление блока .preview-number-total
-        this._getPreviewNumberTotal().textContent = pictures.length.toString();
       } else {
         this.hide();
       }
     },
 
     /**
-     * Метод для переключения текущего состояния видео
-     * @param e
+     * Метод для переключения текущего состояния видео.
+     * @param {MouseEvent} e
      */
     togglePlayVideo: function(e) {
       if (e.target.tagName === 'VIDEO') {
@@ -349,7 +338,7 @@ define([ //eslint-disable-line no-undef
 
     /**
      * Обработчик события hashchange, который будет показывать или
-     * прятать галерею на определенной фотографии в зависимости от содержимого хэша
+     * прятать галерею на определенной фотографии в зависимости от содержимого хэша.
      * @private
      */
     _onHashChange: function() {
@@ -358,7 +347,7 @@ define([ //eslint-disable-line no-undef
 
     /**
      * Показывает фотографию, если хэш в адресной строке соответствует адресу
-     * из массива фотографий и видео, прячет галерею, если таких фотографий нет
+     * из массива фотографий и видео, прячет галерею, если таких фотографий нет.
      */
     restoreFromHash: function() {
       var photo = location.hash.match(/#photo\/(\S+)/);

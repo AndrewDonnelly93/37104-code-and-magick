@@ -5,7 +5,7 @@
 define(function() { //eslint-disable-line no-undef
 
   /**
-   * Получение относительного адреса из абсолютного
+   * Получение относительного адреса из абсолютного.
    * @example
    * На входе:
    * https://js-htmlacademy.github.io/37104-code-and-magick/index.html/img/screenshots/2.png

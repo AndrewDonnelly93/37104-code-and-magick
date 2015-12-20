@@ -5,7 +5,7 @@
 define(function() { //eslint-disable-line no-undef
 
   /**
-   * Убирает класс или добавляет его
+   * Убирает класс или добавляет его.
    * @param {Element} element
    * @param {string} className
    * @param {boolean=} action

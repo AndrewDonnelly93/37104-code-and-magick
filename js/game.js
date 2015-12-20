@@ -2,9 +2,7 @@
 
 define(function() { //eslint-disable-line no-undef
 
-  /**
-  * Задает инициализацию скролла
-   */
+  /** Задает инициализацию скролла. */
   function scrollDetecting() {
     var scrollTimeout;
     var SCROLL_TIMEOUT = 100;
@@ -29,6 +27,7 @@ define(function() { //eslint-disable-line no-undef
           clouds.style.backgroundPosition = -2 * document.body.scrollTop + 'px top';
         }
       }, SCROLL_TIMEOUT);
+
     });
   }
 
@@ -359,14 +358,11 @@ define(function() { //eslint-disable-line no-undef
       }
 
       this._preloadImagesForLevel(function() {
-        // Предварительная отрисовка игрового экрана.
-        this.render();
+        this.render(); // Предварительная отрисовка игрового экрана.
 
-        // Установка обработчиков событий.
-        this._initializeGameListeners();
+        this._initializeGameListeners();  // Установка обработчиков событий.
 
-        // Запуск игрового цикла.
-        this.update();
+        this.update(); // Запуск игрового цикла.
       }.bind(this));
     },
 
@@ -409,81 +405,82 @@ define(function() { //eslint-disable-line no-undef
      * Отрисовка на Canvas прямоугольника, в котором выведется статус игры.
      * @param {number} coordX
      * @param {number} coordY
-     * @param {number} offsetLine
-     * @param {number} rectangleWidth
+     * @param {number} OFFSET_LINE
+     * @param {number} RECTANGLE_WIDTH
      * @param {number} rectangleHeight
-     * @param {string} color - fillStyle
+     * @param {string} fillStyle
      * @private
      */
-    _drawRectangleCanvas: function(coordX, coordY, offsetLine, rectangleWidth, rectangleHeight, color) {
-      this.ctx.fillStyle = color;
+    _drawRectangleCanvas: function(coordX, coordY, OFFSET_LINE, RECTANGLE_WIDTH, rectangleHeight, fillStyle) {
+      this.ctx.fillStyle = fillStyle;
       this.ctx.beginPath();
       this.ctx.moveTo(coordX, coordY);
-      this.ctx.moveTo(coordX + offsetLine, coordY);
-      this.ctx.lineTo(coordX + rectangleWidth, coordY);
-      this.ctx.lineTo(coordX + rectangleWidth, coordY + rectangleHeight);
-      this.ctx.lineTo(coordX, coordY + rectangleHeight + offsetLine);
-      this.ctx.lineTo(coordX + offsetLine, coordY);
+      this.ctx.moveTo(coordX + OFFSET_LINE, coordY);
+      this.ctx.lineTo(coordX + RECTANGLE_WIDTH, coordY);
+      this.ctx.lineTo(coordX + RECTANGLE_WIDTH, coordY + rectangleHeight);
+      this.ctx.lineTo(coordX, coordY + rectangleHeight + OFFSET_LINE);
+      this.ctx.lineTo(coordX + OFFSET_LINE, coordY);
       this.ctx.closePath();
       this.ctx.fill();
     },
 
     /**
-     * Получение сообщения в виде массива из строк
+     * Получение сообщения в виде массива из строк, а также высоты сообщения.
      * @param {string} msg
      * @param {number} messageWidth
-     * @param {number} lineHeight
-     * @param {number} fontSize
-     * @param {string} fontFamily
+     * @param {number} LINE_HEIGHT
+     * @param {number} FONT_SIZE
+     * @param {string} FONT_FAMILY
      * @return {Object}
      * @private
      */
-    _getMessageAsArrayOfStrings: function(msg, messageWidth, lineHeight, fontSize, fontFamily) {
+    _getMessage: function(msg, messageWidth, LINE_HEIGHT, FONT_SIZE, FONT_FAMILY) {
       var text = msg.split(' ');
       var line = '';
-      this.ctx.font = fontSize + 'px ' + fontFamily;
+      this.ctx.font = FONT_SIZE + 'px ' + FONT_FAMILY;
       var messageAsArray = {
         message: [],
-        // Для последней линии, высота которой не добавится в цикле
-        messageHeight: lineHeight
+        messageHeight: LINE_HEIGHT  // Для последней линии, высота которой не добавится в цикле.
       };
 
       for (var i = 0; i < text.length; i++) {
+
         var testLine = line + text[i] + ' ';
         var testWidth = this.ctx.measureText(testLine).width;
         // Если длина строки с новым словом превышает установленную длину сообщения,
-        // строка сохраняется в массив без нового слова, с него начинается новая строка
+        // строка сохраняется в массив без нового слова, с него начинается новая строка.
         if (testWidth > messageWidth) {
           messageAsArray.message.push(line);
-          messageAsArray.messageHeight += lineHeight;
+          messageAsArray.messageHeight += LINE_HEIGHT;
           line = text[i] + ' ';
         } else {
           line = testLine;
         }
+
       }
-      // Добавление последней строки
-      messageAsArray.message.push(line.slice(0, line.length - 1));
+
+      messageAsArray.message.push(line.slice(0, line.length - 1)); // Добавление последней строки.
       messageAsArray.messageHeight = Math.ceil(messageAsArray.messageHeight);
       return messageAsArray;
     },
 
     /**
      * Вычисляется высота прямоугольника с собщением о статусе игры
-     * и его координата Y относительно высоты Canvas
+     * и его координата Y относительно высоты Canvas.
      * @param {object} messageHeight
-     * @param {number} verticalMessageOffset
-     * @param {number} offsetLine
+     * @param {number} VERTICAL_MESSAGE_OFFSET
+     * @param {number} OFFSET_LINE
      * @return {Object}
      * @private
      */
-    _calculateRectangleData: function(messageHeight, verticalMessageOffset, offsetLine) {
+    _calculateRectangleData: function(messageHeight, VERTICAL_MESSAGE_OFFSET, OFFSET_LINE) {
       var rectangleData = {
         rectangleY: 0,
         rectangleHeight: 0
       };
-      rectangleData.rectangleHeight = verticalMessageOffset + messageHeight;
+      rectangleData.rectangleHeight = VERTICAL_MESSAGE_OFFSET + messageHeight;
       if ((this.canvas.height - rectangleData.rectangleHeight) > 0) {
-        rectangleData.rectangleY = 0.5 * (this.canvas.height - rectangleData.rectangleHeight - 0.5 * offsetLine);
+        rectangleData.rectangleY = 0.5 * (this.canvas.height - rectangleData.rectangleHeight - 0.5 * OFFSET_LINE);
       }
       return rectangleData;
     },
@@ -494,14 +491,14 @@ define(function() { //eslint-disable-line no-undef
      * @param {object} msg
      * @param {number} messageX
      * @param {number} messageY
-     * @param {number} lineHeight
+     * @param {number} LINE_HEIGHT
      * @private
      */
-    _printMessageOnScreen: function(msg, messageX, messageY, lineHeight) {
-      messageY += 0.5 * lineHeight;
+    _printMessageOnScreen: function(msg, messageX, messageY, LINE_HEIGHT) {
+      messageY += 0.5 * LINE_HEIGHT;
       for (var i = 0; i < msg.length; i++) {
         this.ctx.fillText(msg[i], messageX, messageY);
-        messageY += lineHeight;
+        messageY += LINE_HEIGHT;
       }
     },
 
@@ -511,49 +508,49 @@ define(function() { //eslint-disable-line no-undef
      * @private
      */
     _drawMessageInCanvas: function(msg) {
-      var rectangleWidth = 320;
+      var RECTANGLE_WIDTH = 320;
 
       // Треугольник будет нарисован на 20 пикселей левее прямоугольника
-      // и на 20 пикселей ниже
-      var offsetLine = 20;
+      // и на 20 пикселей ниже.
+      var OFFSET_LINE = 20;
 
-      // Насколько ширина сообщения будет меньше ширины прямоугольника
-      var horizontalMessageOffset = 45;
-      var messageWidth = rectangleWidth - horizontalMessageOffset;
+      // Насколько ширина сообщения будет меньше ширины прямоугольника.
+      var HORIZONTAL_MESSAGE_OFFSET = 45;
+      var messageWidth = RECTANGLE_WIDTH - HORIZONTAL_MESSAGE_OFFSET;
 
       // Задание стиля для сообшения
-      var fontSize = 16;
-      var fontFamily = 'PT Mono';
-      var lineHeight = fontSize * 1.2;
+      var FONT_SIZE = 16;
+      var FONT_FAMILY = 'PT Mono';
+      var LINE_HEIGHT = FONT_SIZE * 1.2;
 
       // Получение сообщения в виде массива строк, подогнанных под ширину
       // прямоугольника
-      var messageAsArray = this._getMessageAsArrayOfStrings(msg, messageWidth, lineHeight, fontSize, fontFamily);
+      var messageAsArray = this._getMessage(msg, messageWidth, LINE_HEIGHT, FONT_SIZE, FONT_FAMILY);
 
       // Вычисление высоты прямоугольника и координаты по оси Y
       // Верхний отступ сообщения от границ прямоугольника
-      var verticalMessageOffset = 20;
-      var rectangleData = this._calculateRectangleData(messageAsArray.messageHeight, verticalMessageOffset, offsetLine);
+      var VERTICAL_MESSAGE_OFFSET = 20;
+      var rectangleData = this._calculateRectangleData(messageAsArray.messageHeight, VERTICAL_MESSAGE_OFFSET, OFFSET_LINE);
       var rectangleHeight = rectangleData.rectangleHeight;
       var rectangleY = rectangleData.rectangleY;
 
       // Отрисовка прямоугольника и его тени
-      var offsetRectangleShadow = 10;
-      var rectangleBg = '#fff';
-      var rectangleShadowBg = 'rgba(0, 0, 0, 0.7)';
+      var OFFSET_RECTANGLE_SHADOW = 10;
+      var RECTANGLE_BG = '#fff';
+      var RECTANGLE_SHADOW_BG = 'rgba(0, 0, 0, 0.7)';
       // Координата начала фигуры (треугольника - дополнения к прямоугольнику и самого прямоугольника)
-      var rectangleX = 0.5 * (this.canvas.width - rectangleWidth - 0.5 * offsetLine);
+      var rectangleX = 0.5 * (this.canvas.width - RECTANGLE_WIDTH - 0.5 * OFFSET_LINE);
       // Рисуем тень прямоугольника
-      this._drawRectangleCanvas(rectangleX + offsetRectangleShadow, rectangleY + offsetRectangleShadow, offsetLine,
-        rectangleWidth, rectangleHeight, rectangleShadowBg);
+      this._drawRectangleCanvas(rectangleX + OFFSET_RECTANGLE_SHADOW, rectangleY + OFFSET_RECTANGLE_SHADOW, OFFSET_LINE,
+        RECTANGLE_WIDTH, rectangleHeight, RECTANGLE_SHADOW_BG);
       // Рисуем сам прямоугольник
-      this._drawRectangleCanvas(rectangleX, rectangleY, offsetLine, rectangleWidth, rectangleHeight, rectangleBg);
+      this._drawRectangleCanvas(rectangleX, rectangleY, OFFSET_LINE, RECTANGLE_WIDTH, rectangleHeight, RECTANGLE_BG);
 
       // Вывод текста сообщения в прямоугольнике
-      var messageX = rectangleX + horizontalMessageOffset;
-      var messageY = rectangleY + verticalMessageOffset;
-      this.ctx.fillStyle = rectangleShadowBg;
-      this._printMessageOnScreen(messageAsArray.message, messageX, messageY, lineHeight);
+      var messageX = rectangleX + HORIZONTAL_MESSAGE_OFFSET;
+      var messageY = rectangleY + VERTICAL_MESSAGE_OFFSET;
+      this.ctx.fillStyle = RECTANGLE_SHADOW_BG;
+      this._printMessageOnScreen(messageAsArray.message, messageX, messageY, LINE_HEIGHT);
     },
 
     /**

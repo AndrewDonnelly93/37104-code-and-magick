@@ -13,10 +13,10 @@ define([ //eslint-disable-line no-undef
 ], function(Review, toggleClass) {
 
   /**
-   * Конструктор
-   * @param {Element} filter список фильтров
-   * @param {Element} container контейнер для размещения списка отзывов
-   * @param {Element} more кнопка для показа следующей страницы отзывов
+   * Конструктор списка отзывов.
+   * @param {Element} filter список фильтров.
+   * @param {Element} container контейнер для размещения списка отзывов.
+   * @param {Element} more кнопка для показа следующей страницы отзывов.
    * @constructor
    */
   var ReviewsList = function(filter, container, more) {
@@ -32,8 +32,8 @@ define([ //eslint-disable-line no-undef
     this.container = container;
     this.more = more;
     this.filteredReviews = [];
-    // Отрисованные отзывы
-    this.renderedReviews = [];
+
+    this.renderedReviews = []; // Отрисованные отзывы.
     this.getReviewsByAJAX();
     this.showMoreReviews();
     this._xhrError = this._xhrError.bind(this);
@@ -43,7 +43,7 @@ define([ //eslint-disable-line no-undef
   ReviewsList.prototype = {
 
     /**
-     * Устанавливает отрисованные отзывы
+     * Устанавливает отрисованные отзывы.
      * @param {Array.<Review>} reviews
      */
     setRenderedReviews: function(reviews) {
@@ -51,23 +51,19 @@ define([ //eslint-disable-line no-undef
     },
 
     /**
-     * Возвращает отрисованные отзывы
+     * Возвращает отрисованные отзывы.
      * @return {Array.<Review>}
      */
     getRenderedReviews: function() {
       return this.renderedReviews;
     },
 
-    /**
-     * Получение контейнера
-     */
+    /** Получение контейнера. */
     getContainer: function() {
       return this.container;
     },
 
-    /**
-     * Получение списка отзывов по AJAX
-     */
+    /** Получение списка отзывов по AJAX. */
     getReviewsByAJAX: function() {
 
       var container = this.getContainer();
@@ -76,8 +72,8 @@ define([ //eslint-disable-line no-undef
       xhr.timeout = 15000;
 
       /**
-       * Обработка списка отзывов в случае зависания сервера
-       * К reviews добавляется класс review-load-failure
+       * Обработка списка отзывов в случае зависания сервера.
+       * К reviews добавляется класс review-load-failure.
        */
       xhr.ontimeout = (function() {
         this._xhrError();
@@ -85,9 +81,10 @@ define([ //eslint-disable-line no-undef
 
       /**
        * Пока длится загрузка файла, к reviews добавлятся класс
-       * reviews-list-loading
+       * reviews-list-loading.
        */
       xhr.onreadystatechange = (function() {
+
         if (xhr.readyState < 4) {
           toggleClass(container, 'invisible', true);
           toggleClass(container.parentElement, 'reviews-list-loading', true);
@@ -95,11 +92,12 @@ define([ //eslint-disable-line no-undef
           return xhr.status === 200 ?
             this._xhrSuccess() : toggleClass(container.parentElement, 'reviews-list-loading');
         }
+
       }).bind(this);
 
       /**
        * При ошибке в процессе загрузки отзыву добавляется класс
-       * review-load-failure
+       * review-load-failure.
        */
       xhr.onerror = (function() {
         this._xhrError();
@@ -107,8 +105,7 @@ define([ //eslint-disable-line no-undef
 
       /**
        * После загрузки данных по AJAX список отзывов записывается
-       * в прототип ReviewsList
-       * @type {function(this:ReviewsList)}
+       * в прототип ReviewsList.
        */
       xhr.onload = (function(e) {
         this._xhrSuccess();
@@ -120,7 +117,7 @@ define([ //eslint-disable-line no-undef
 
 
     /**
-     * Обработка данных при ошибочном выполнении XHR
+     * Обработка данных при ошибочном выполнении XHR.
      * @private
      */
     _xhrError: function() {
@@ -131,7 +128,7 @@ define([ //eslint-disable-line no-undef
     },
 
     /**
-     * Обработка данных при успешном выполнении XHR
+     * Обработка данных при успешном выполнении XHR.
      * @private
      */
     _xhrSuccess: function() {
@@ -141,74 +138,60 @@ define([ //eslint-disable-line no-undef
       toggleClass(container.parentElement, 'review-load-failure');
     },
 
-    /**
-     * Получение списка фильтров
-     */
+    /** Получение списка фильтров. */
     getFilters: function() {
       return this.filter.all;
     },
 
-    /**
-    * Получение активного фильтра
-    */
+    /** Получение активного фильтра. */
     getActiveFilter: function() {
       return this.filter.active;
     },
 
     /**
-     * Установка активного фильтра
+     * Установка активного фильтра.
      * @param {Element} filter
      */
     setActiveFilter: function(filter) {
       this.filter.active = filter;
     },
 
-    /**
-     * Получение текущей страницы
-     */
+    /** Получение текущей страницы. */
     getCurrentPage: function() {
       return this.pages.current;
     },
 
-    /**
-     * Получение количества отзывов на странице
-     */
+    /** Получение количества отзывов на странице. */
     getPageSize: function() {
       return this.pages.PAGE_SIZE;
     },
 
-    /**
-     * Получение списка отфильтрованных отзывов
-     */
+    /** Получение списка отфильтрованных отзывов. */
     getFilteredReviews: function() {
       return this.filteredReviews;
     },
 
     /**
-     * Установка списка отфильтрованных отзывов
+     * Установка списка отфильтрованных отзывов.
      * @param {Array.<Object>} reviews
      */
     setFilteredReviews: function(reviews) {
       this.filteredReviews = reviews;
     },
 
-    /**
-     * Получение кнопки 'еще отзывы'
-     */
+    /** Получение кнопки 'еще отзывы'. */
     getMore: function() {
       return this.more;
     },
 
-    /**
-     * Установка обработчика событий по клику на кнопку 'еще отзывы'
-     */
+    /** Установка обработчика событий по клику на кнопку 'еще отзывы'. */
     showMoreReviews: function() {
       var getMoreBtn = this.getMore();
 
       getMoreBtn.addEventListener('click', (function() {
         var currentPage = this.getCurrentPage();
-        // Для отображения следующей порции отзывов нужно посмотреть, есть ли они
-        // Страницы нумеруются с 0, поэтому вычитаем из потолка единицу
+        // Для отображения следующей порции отзывов нужно посмотреть, есть ли они.
+        // Страницы нумеруются с 0, поэтому вычитаем из потолка единицу.
         var pageCount = (Math.ceil(this.getFilteredReviews().length / this.getPageSize())) - 1;
 
         if (currentPage < pageCount) {
@@ -226,16 +209,14 @@ define([ //eslint-disable-line no-undef
     },
 
     /**
-     * Установка текущей страницы
+     * Установка текущей страницы.
      * @param {number} page
      */
     setCurrentPage: function(page) {
       this.pages.current = page;
     },
 
-    /**
-    * Установка обработчика событий по клику на список фильтров
-     */
+    /** Установка обработчика событий по клику на список фильтров. */
     setCurrentFilter: function() {
       this.getFilters().addEventListener('click', (function(e) {
         var clickedElement = e.target;
@@ -245,9 +226,7 @@ define([ //eslint-disable-line no-undef
       }).bind(this));
     },
 
-    /**
-     * Установка значения reviews у объекта, вызов рендеринга списка отзывов
-     */
+    /** Установка значения reviews у объекта, вызов рендеринга списка отзывов. */
     setReviews: function(reviews) {
       this.reviews = reviews.map(function(review) {
         return new Review(review);
@@ -255,28 +234,28 @@ define([ //eslint-disable-line no-undef
       this.filterReviews(this.getActiveFilter(), true);
     },
 
-    /**
-     * Получение списка отзывов
-     */
+    /** Получение списка отзывов. */
     getReviews: function() {
       return this.reviews;
     },
 
     /**
-     * Установка значения reviews у объекта, вызов рендеринга списка отзывов
-     * @param {string} id - id текущего активного фильтр
+     * Установка значения reviews у объекта, вызов рендеринга списка отзывов.
+     * @param {string} id - id текущего активного фильтр.
      * @param {boolean=} force Флаг, при котором игнорируется проверка
-     *     на повторное присвоение фильтра
+     *     на повторное присвоение фильтра.
      */
     filterReviews: function(id, force) {
+
       if (this.getActiveFilter() === id && !force) {
         return;
       }
 
       var filteredReviews = this.getReviews().slice(0);
+
       switch (id) {
-        case 'reviews-recent':
-          // Выборка отзывов за прошедшие полгода
+
+        case 'reviews-recent':  // Выборка отзывов за прошедшие полгода.
           var currentDate = new Date();
           var DAYS_TO_EXPIRE = 180;
           var dateToExpire = DAYS_TO_EXPIRE * 24 * 3600 * 1000;
@@ -287,9 +266,10 @@ define([ //eslint-disable-line no-undef
             return new Date(b.getDate()) - new Date(a.getDate());
           });
           break;
+
         case 'reviews-good':
           // Выборка отзывов с рейтингом не меньше 3
-          // по убыванию рейтинга
+          // по убыванию рейтинга.
           filteredReviews = filteredReviews.filter(function(review) {
             return review.getRating() >= 3;
           });
@@ -297,9 +277,10 @@ define([ //eslint-disable-line no-undef
             return b.getRating() - a.getRating();
           });
           break;
+
         case 'reviews-bad':
           // Выборка отзывов с рейтингом не выше 2,
-          // отсортированные по возрастанию рейтинга
+          // отсортированные по возрастанию рейтинга.
           filteredReviews = filteredReviews.filter(function(review) {
             return review.getRating() <= 2;
           });
@@ -307,12 +288,14 @@ define([ //eslint-disable-line no-undef
             return a.getRating() - b.getRating();
           });
           break;
+
         case 'reviews-popular':
           // Выборка, отсортированная по убыванию оценки отзыва (поле review-rating).
           filteredReviews.sort(function(a, b) {
             return b.getReviewRating() - a.getReviewRating();
           });
           break;
+
         case 'reviews-all':
         default:
           break;
@@ -323,35 +306,39 @@ define([ //eslint-disable-line no-undef
       this.renderReviews(true);
       this.setActiveFilter(id);
       document.querySelector('#' + id).checked = true;
-      // Установка активного фильтра в localStorage
-      localStorage.setItem('activeFilter', id);
+      localStorage.setItem('activeFilter', id);  // Установка активного фильтра в localStorage.
     },
 
     /**
      * Создает список отзывов: изначально в DocumentFragment,
      * после этого в DOM.
-     * @param {boolean=} replace При true очистка контейнера
+     * @param {boolean=} replace При true очистка контейнера.
      */
     renderReviews: function(replace) {
+
       var renderedReviews = this.getRenderedReviews();
       var tempContainer = document.createDocumentFragment();
       var container = this.getContainer();
-      // Очищение списка отзывов в контейнере
+
+      // Очищение списка отзывов в контейнере.
       if (replace) {
-        // Больше не работаем с DOM-элементом компоненты
+        // Больше не работаем с DOM-элементом компоненты.
         toggleClass(this.getMore(), 'invisible', false);
         var el;
         // Удаляем отрисованные элементы из массива renderedReviews
-        // и из DOM
+        // и из DOM.
         while ((el = renderedReviews.shift())) { //eslint-disable-line no-cond-assign
           container.removeChild(el.getElement());
           el.remove();
         }
       }
+
       var PAGE_SIZE = this.getPageSize();
       var from = this.getCurrentPage() * PAGE_SIZE;
       var to = from + PAGE_SIZE;
       var reviews = this.getFilteredReviews().slice(from, to);
+
+      // Отрисованные отзывы добавляются в соответствующий массив.
       this.setRenderedReviews(renderedReviews.concat(
         reviews.map(function(review) {
           var reviewElement = new Review(review);
@@ -360,15 +347,15 @@ define([ //eslint-disable-line no-undef
           return reviewElement;
         })
       ));
+
       container.appendChild(tempContainer);
-      // Показывает фильтры у отзывов после загрузки списка отзывов
-      toggleClass(this.getFilters(), 'invisible');
+      toggleClass(this.getFilters(), 'invisible');  // Показывает фильтры у отзывов после загрузки списка отзывов.
     }
 
   };
 
   /**
-   * Создание нового объекта - списка отзывов
+   * Создание нового объекта - списка отзывов.
    * @type {ReviewsList}
    */
   var reviewList = new ReviewsList(document.querySelector('.reviews-filter'),
