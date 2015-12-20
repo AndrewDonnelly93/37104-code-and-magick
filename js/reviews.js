@@ -30,7 +30,7 @@
   var ReviewsList = function(filter, container, more) {
     this.filter = {
       all: filter,
-      active: 'reviews-all'
+      active: localStorage.getItem('activeFilter') || 'reviews-all'
     };
     this.pages = {
       current: 0,
@@ -44,6 +44,8 @@
     this.renderedReviews = [];
     this.getReviewsByAJAX();
     this.showMoreReviews();
+    this._xhrError = this._xhrError.bind(this);
+    this._xhrSuccess = this._xhrSuccess.bind(this);
   };
 
   ReviewsList.prototype = {
@@ -85,38 +87,31 @@
        * Обработка списка отзывов в случае зависания сервера
        * К reviews добавляется класс review-load-failure
        */
-      xhr.ontimeout = function() {
-        toggleClass(container, 'invisible', true);
-        toggleClass(container.parentElement, 'reviews-list-loading');
-        toggleClass(container.parentElement, 'review-load-failure', true);
-      };
+      xhr.ontimeout = (function() {
+        this._xhrError();
+      }).bind(this);
 
       /**
        * Пока длится загрузка файла, к reviews добавлятся класс
        * reviews-list-loading
        */
-      xhr.onreadystatechange = function() {
+      xhr.onreadystatechange = (function() {
         if (xhr.readyState < 4) {
           toggleClass(container, 'invisible', true);
           toggleClass(container.parentElement, 'reviews-list-loading', true);
         } else if (xhr.readyState === 4) {
-          if (xhr.status === 200) {
-            toggleClass(container.parentElement, 'review-load-failure');
-            toggleClass(container, 'invisible');
-          }
-          toggleClass(container.parentElement, 'reviews-list-loading');
+          return xhr.status === 200 ?
+            this._xhrSuccess() : toggleClass(container.parentElement, 'reviews-list-loading');
         }
-      };
+      }).bind(this);
 
       /**
        * При ошибке в процессе загрузки отзыву добавляется класс
        * review-load-failure
        */
-      xhr.onerror = function() {
-        toggleClass(container.parentElement, 'reviews-list-loading');
-        toggleClass(container, 'invisible', true);
-        toggleClass(container.parentElement, 'review-load-failure', true);
-      };
+      xhr.onerror = (function() {
+        this._xhrError();
+      }).bind(this);
 
       /**
        * После загрузки данных по AJAX список отзывов записывается
@@ -124,13 +119,34 @@
        * @type {function(this:ReviewsList)}
        */
       xhr.onload = (function(e) {
-        toggleClass(container, 'invisible');
-        toggleClass(container.parentElement, 'reviews-list-loading');
-        toggleClass(container.parentElement, 'review-load-failure');
+        this._xhrSuccess();
         this.setReviews(JSON.parse(e.target.response));
       }).bind(this);
 
       xhr.send();
+    },
+
+
+    /**
+     * Обработка данных при ошибочном выполнении XHR
+     * @private
+     */
+    _xhrError: function() {
+      var container = this.getContainer();
+      toggleClass(container.parentElement, 'reviews-list-loading');
+      toggleClass(container, 'invisible', true);
+      toggleClass(container.parentElement, 'review-load-failure', true);
+    },
+
+    /**
+     * Обработка данных при успешном выполнении XHR
+     * @private
+     */
+    _xhrSuccess: function() {
+      var container = this.getContainer();
+      toggleClass(container, 'invisible');
+      toggleClass(container.parentElement, 'reviews-list-loading');
+      toggleClass(container.parentElement, 'review-load-failure');
     },
 
     /**
@@ -196,11 +212,13 @@
      */
     showMoreReviews: function() {
       var getMoreBtn = this.getMore();
+
       getMoreBtn.addEventListener('click', (function() {
         var currentPage = this.getCurrentPage();
         // Для отображения следующей порции отзывов нужно посмотреть, есть ли они
         // Страницы нумеруются с 0, поэтому вычитаем из потолка единицу
         var pageCount = (Math.ceil(this.getFilteredReviews().length / this.getPageSize())) - 1;
+
         if (currentPage < pageCount) {
           // Предпоследняя страница
           if (currentPage === (pageCount - 1)) {
@@ -211,6 +229,7 @@
           this.setCurrentPage(currentPage + 1);
           this.renderReviews();
         }
+
       }).bind(this));
     },
 
@@ -258,19 +277,19 @@
      *     на повторное присвоение фильтра
      */
     filterReviews: function(id, force) {
-      if ((this.getActiveFilter() === id) && !force) {
+      if (this.getActiveFilter() === id && !force) {
         return;
       }
+
       var filteredReviews = this.getReviews().slice(0);
       switch (id) {
         case 'reviews-recent':
           // Выборка отзывов за прошедшие полгода
+          var currentDate = new Date();
+          var DAYS_TO_EXPIRE = 180;
+          var dateToExpire = DAYS_TO_EXPIRE * 24 * 3600 * 1000;
           filteredReviews = filteredReviews.filter(function(review) {
-            var currentDate = new Date();
-            var reviewDate = Date.parse(review.getDate());
-            var DAYS_TO_EXPIRE = 180;
-            var dateToExpire = DAYS_TO_EXPIRE * 24 * 3600 * 1000;
-            return (currentDate - reviewDate <= dateToExpire);
+            return (currentDate - Date.parse(review.getDate()) <= dateToExpire);
           });
           filteredReviews.sort(function(a, b) {
             return new Date(b.getDate()) - new Date(a.getDate());
@@ -280,7 +299,7 @@
           // Выборка отзывов с рейтингом не меньше 3
           // по убыванию рейтинга
           filteredReviews = filteredReviews.filter(function(review) {
-            return (review.getRating() >= 3);
+            return review.getRating() >= 3;
           });
           filteredReviews.sort(function(a, b) {
             return b.getRating() - a.getRating();
@@ -290,7 +309,7 @@
           // Выборка отзывов с рейтингом не выше 2,
           // отсортированные по возрастанию рейтинга
           filteredReviews = filteredReviews.filter(function(review) {
-            return (review.getRating() <= 2);
+            return review.getRating() <= 2;
           });
           filteredReviews.sort(function(a, b) {
             return a.getRating() - b.getRating();
@@ -306,10 +325,14 @@
         default:
           break;
       }
+
       this.setCurrentPage(0);
       this.setFilteredReviews(filteredReviews);
       this.renderReviews(true);
       this.setActiveFilter(id);
+      document.querySelector('#' + id).checked = true;
+      // Установка активного фильтра в localStorage
+      localStorage.setItem('activeFilter', id);
     },
 
     /**
