@@ -1,8 +1,16 @@
-/* global Review: true, toggleClass: true */
-
 'use strict';
 
-(function() {
+requirejs.config({ //eslint-disable-line no-undef
+  baseUrl: 'js'
+});
+
+define([ //eslint-disable-line no-undef
+  'review',
+  'toggle-class',
+  'game',
+  'form',
+  'photos'
+], function(Review, toggleClass) {
 
   /**
    * Конструктор
@@ -368,4 +376,4 @@
 
   reviewList.setCurrentFilter();
 
-})();
+});

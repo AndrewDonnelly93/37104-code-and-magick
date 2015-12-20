@@ -1,9 +1,9 @@
-/* global toggleClass: true */
 /* exported toggleClass */
 
 'use strict';
 
-(function() {
+define(function() { //eslint-disable-line no-undef
+
   /**
    * Убирает класс или добавляет его
    * @param {Element} element
@@ -21,5 +21,5 @@
     }
   }
 
-  window.toggleClass = toggleClass;
-})();
+  return toggleClass;
+});
