@@ -30,7 +30,7 @@ define([ //eslint-disable-line no-undef
   // изменение состояния хэша в адресной строке
   gallery.restoreFromHash();
 
-  var galleryImages = document.querySelectorAll('.photogallery .photogallery-image');
+  var galleryImages = document.querySelectorAll('.photogallery');
 
   /**
    * При клике на картинку изменяется хэш в адресной строке, что
