@@ -2,12 +2,12 @@
 
 'use strict';
 
-define(function() { //eslint-disable-line no-undef
+define(function() {
 
   /**
    * Принимает два конструктора и записывает в прототип
    * дочернего конструктора child методы и свойства родительского конструктора parent
-   * через пустой конструктор
+   * через пустой конструктор.
    * @param {Function} child
    * @param {Function} parent
    */

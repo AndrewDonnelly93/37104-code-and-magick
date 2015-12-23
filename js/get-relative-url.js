@@ -2,17 +2,17 @@
 
 'use strict';
 
-define(function() { //eslint-disable-line no-undef
+define(function() {
 
   /**
-   * Получение относительного адреса из абсолютного
+   * Получение относительного адреса из абсолютного.
    * @example
    * На входе:
    * https://js-htmlacademy.github.io/37104-code-and-magick/index.html/img/screenshots/2.png
    * На выходе:
    * /img/screenshots/2.png
    * @param absoluteUrl
-   * @return {*}
+   * @return {string}
    */
   function getRelativeUrl(absoluteUrl) {
     var pathArray = window.location.pathname.split('/');

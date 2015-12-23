@@ -1,8 +1,8 @@
 /**
  * Возвращает сообщение в зависимости от действий пользователя
- * @param a
- * @param b
- * @returns {string}
+ * @param {Array|number|boolean} a
+ * @param {Array|number|boolean} b
+ * @return {string}
  */
 function getMessage(a, b) {
   if (Array.isArray(a) && Array.isArray(b)) {
@@ -18,11 +18,7 @@ function getMessage(a, b) {
   } else if (typeof a === 'number') {
     return 'Я прыгнул на ' + a * 100 + ' сантиметров';
   } else if (typeof a === 'boolean') {
-    if (a && b) {
-      return 'Я попал в ' + b;
-    } else {
-      return 'Я никуда не попал';
-    }
+      return a && b ? 'Я попал в ' + b : 'Я никуда не попал';
   } else {
     return 'Я не знаю, что вы хотели сделать.';
   }

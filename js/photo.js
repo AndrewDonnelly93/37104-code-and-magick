@@ -2,11 +2,11 @@
 
 'use strict';
 
-define(function() { //eslint-disable-line no-undef
+define(function() {
 
   /**
-   * Конструктор объекта Photo
-   * @param url
+   * Конструктор объекта Photo.
+   * @param {string} url
    * @constructor
    */
   function Photo(url) {
@@ -16,8 +16,8 @@ define(function() { //eslint-disable-line no-undef
   Photo.prototype = {
 
     /**
-     * Возвращает адрес картинки
-     * @returns {*}
+     * Возвращает адрес картинки.
+     * @return {string}
      */
     getUrl: function() {
       return this.url;
@@ -25,8 +25,8 @@ define(function() { //eslint-disable-line no-undef
 
     /**
      * Устанавливает картинку в фотографию
-     * объекта Photo
-     * @param url
+     * объекта Photo.
+     * @param {string} url
      */
     setUrl: function(url) {
       this.url = url;

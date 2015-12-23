@@ -2,10 +2,10 @@
 
 'use strict';
 
-define(function() { //eslint-disable-line no-undef
+define(function() {
 
   /**
-   * Убирает класс или добавляет его
+   * Убирает класс или добавляет его.
    * @param {Element} element
    * @param {string} className
    * @param {boolean=} action
