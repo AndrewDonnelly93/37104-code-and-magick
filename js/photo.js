@@ -16,7 +16,6 @@ define(function() {
   Photo.prototype = {
 
     /**
-     * Возвращает адрес картинки.
      * @return {string}
      */
     getUrl: function() {
@@ -24,8 +23,6 @@ define(function() {
     },
 
     /**
-     * Устанавливает картинку в фотографию
-     * объекта Photo.
      * @param {string} url
      */
     setUrl: function(url) {

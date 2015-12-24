@@ -18,22 +18,16 @@ define([
       new Video(pic.dataset.replacementVideo) : new Photo(pic.querySelector('img').src);
   });
 
-  /**
-   * Создание текущей галереи.
-   * @type {Gallery}
-   */
   var gallery = new Gallery();
 
-  gallery.setPictures(pictures); // Заполняем галерею картинками.
+  gallery.setPictures(pictures);
 
   // При создании галереи вызывается метод, определяющий
   // изменение состояния хэша в адресной строке.
   gallery.restoreFromHash();
 
-  /**
-   * При клике на картинку изменяется хэш в адресной строке, что
-   * вызывает показ галереи.
-   */
+  // При клике на картинку изменяется хэш в адресной строке, что
+  // вызывает показ галереи.
   Array.prototype.forEach.call(galleryImages, function(image, i) {
     image.addEventListener('click', function(e) {
       e.preventDefault();

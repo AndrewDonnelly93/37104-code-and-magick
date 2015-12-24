@@ -170,14 +170,15 @@ define([
     this.element = element;
   };
 
-  /** Создание элемента отзыва из шаблона. */
+  // Создание элемента отзыва из шаблона.
   Review.prototype.render = function() {
     var template = this._getTemplate();
-    var reviewTemplate = 'content' in template ?
-      template.content.children[0].cloneNode(true) :
-      template.children[0].cloneNode(true);
+    var reviewTemplate = 'content' in template
+      ? template.content.children[0].cloneNode(true)
+      : template.children[0].cloneNode(true);
 
-    var author = reviewTemplate.querySelector('.review-author'); // Добавление изображения
+    // Добавление изображения.
+    var author = reviewTemplate.querySelector('.review-author');
     this._uploadImage(author);
 
     // Установка кнопок полезный отзыв - да и нет.
@@ -194,8 +195,8 @@ define([
       toggleClass(star, 'review-rating', true);
       reviewTemplate.insertBefore(star, reviewTemplate.querySelector('.review-text'));
     }
-    reviewTemplate.querySelector('.review-text').textContent = this.getDescription();
 
+    reviewTemplate.querySelector('.review-text').textContent = this.getDescription();
     this._setElement(reviewTemplate);
   };
 
@@ -204,20 +205,19 @@ define([
    * @param {Element} author шаблон отзыва
    */
   Review.prototype._uploadImage = function(author) {
-
     var authorName = this.getAuthorName();
     var imageSrc = this.getAuthorPicture();
     var IMAGE_SIZE = 124;
     var authorImage = new Image();
     var IMAGE_TIMEOUT = 10000;
 
-    /** Обработка изображения в случае зависания сервера. */
+    // Обработка изображения в случае зависания сервера.
     var imageLoadTimeout = setTimeout(function() {
       authorImage.src = '';
       toggleClass(author.parentElement, 'review-load-failure', true);
     }, IMAGE_TIMEOUT);
 
-    /** Обработка изображения в случае успешной загрузки. */
+    // Обработка изображения в случае успешной загрузки.
     authorImage.onload = function() {
       if (imageLoadTimeout) {
         clearTimeout(imageLoadTimeout);
@@ -231,7 +231,7 @@ define([
       author.parentElement.replaceChild(authorImage, author.parentElement.querySelector('img'));
     };
 
-    /** Обработка изображения в случае ошибки при загрузке. */
+    // Обработка изображения в случае ошибки при загрузке.
     authorImage.onerror = function() {
       if (imageLoadTimeout) {
         clearTimeout(imageLoadTimeout);
@@ -292,6 +292,7 @@ define([
       return;
     }
     this.setReviewRating(this.getReviewRating() + 1);
+
     // Удаляем активный класс с кнопки полезный отзыв - нет.
     toggleClass(this.getNegativeReviewButton(), 'review-quiz-answer-active', false);
     toggleClass(this.getPositiveReviewButton(), 'review-quiz-answer-active', true);
@@ -303,12 +304,13 @@ define([
       return;
     }
     this.setReviewRating(this.getReviewRating() - 1);
+
     // Удаляем активный класс с кнопки полезный отзыв - да.
     toggleClass(this.getPositiveReviewButton(), 'review-quiz-answer-active', false);
     toggleClass(this.getNegativeReviewButton(), 'review-quiz-answer-active', true);
   };
 
-  /** Удаление обработчиков событий с кнопок 'полезный отзыв'. */
+  // Удаление обработчиков событий с кнопок 'полезный отзыв'.
   Review.prototype.remove = function() {
     this.getPositiveReviewButton().removeEventListener('click', this.onPositiveReviewClick);
     this.getNegativeReviewButton().removeEventListener('click', this.onNegativeReviewClick);

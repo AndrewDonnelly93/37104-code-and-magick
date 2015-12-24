@@ -4,29 +4,30 @@ define([
   'toggle-class'
 ], function(toggleClass) {
 
-  var formContainer = document.querySelector('.overlay-container');
-  var formOpenButton = document.querySelector('.reviews-controls-new');
-  var formCloseButton = document.querySelector('.review-form-close');
+  var container = document.querySelector('.overlay-container');
+  var openButton = document.querySelector('.reviews-controls-new');
+  var closeButton = document.querySelector('.review-form-close');
 
-  formOpenButton.onclick = function(evt) {
-    evt.preventDefault();
-    toggleClass(formContainer, 'invisible');
+  openButton.onclick = function(e) {
+    e.preventDefault();
+    toggleClass(container, 'invisible');
   };
 
-  formCloseButton.onclick = function(evt) {
-    evt.preventDefault();
-    toggleClass(formContainer, 'invisible', true);
+  closeButton.onclick = function(e) {
+    e.preventDefault();
+    toggleClass(container, 'invisible', true);
   };
 
   /**
    * Проверяет заполненность поля (в  него должен быть
    * введен хотя бы один символ).
-   * @param {Element} element
+   * @param {Element|string} element
    * @return {boolean}
    */
   function checkRequiredField(element) {
-    return (typeof element === 'object' && 'value' in element) ?
-       element.value.length !== 0 : element.length !== 0;
+    return (typeof element === 'object' && 'value' in element)
+      ? element.value.length !== 0
+      : element.length !== 0;
   }
 
   /**
@@ -37,19 +38,22 @@ define([
    */
   function setCookies(username, mark) {
 
-    var currentDate = new Date();
-    var currentYear = currentDate.getFullYear();
-    var birthdayDate = new Date(currentYear, 2, 14);
+    var birthday = new Date();
+    birthday.setMonth(2);
+    birthday.setDate(14);
 
-    if (+currentDate - +birthdayDate < 0) {
-      birthdayDate = new Date(currentYear - 1, 2, 14);
+    // Если день рождения в этом году еще не прошел,
+    // берем прошлый день рождения.
+    if (new Date() < birthday) {
+      birthday.setFullYear(birthday.getFullYear() - 1);
     }
-    var timeToExpire = Math.ceil(+currentDate - +birthdayDate);
+
     /**
-     * Дата истечения cookie
+     * Дата истечения cookie. Количество дней, прошедших с прошлого
+     * дня рождения.
      * @type {string}
      */
-    var dateToExpire = new Date(+currentDate + timeToExpire).toUTCString();
+    var dateToExpire = new Date(Date.now() * 2 - birthday.getTime()).toUTCString();
     docCookies.setItem('username', username, dateToExpire);
     docCookies.setItem('mark', mark, dateToExpire);
   }
@@ -59,7 +63,7 @@ define([
    * @param {Element} form
    * @param {Element} controlList
    * @param {Element} submit
-   * @param {NodeList} radios
+   * @param {Element|NodeList} radios
    * @param {Element} username
    * @param {Element} review
    * @constructor
@@ -83,13 +87,16 @@ define([
       this.radios.buttons[docCookies.getItem('mark') - 1].checked = true;
     }
     this.setCurrentMark = this.setCurrentMark.bind(this);
+    this.getUsername = this.getUsername.bind(this);
+    this.setUsername = this.setUsername.bind(this);
+    this.validUsername = this.validUsername.bind(this);
+    this.formValidation = this.formValidation.bind(this);
     this.setCurrentMark();
   };
 
   Form.prototype = {
 
     /**
-     * Получение формы.
      * @return {Element} form
      */
     getForm: function() {
@@ -97,7 +104,6 @@ define([
     },
 
     /**
-     * Получение submit.
      * @return {Element} submit
      */
     getSubmit: function() {
@@ -113,7 +119,6 @@ define([
     },
 
     /**
-     * Установка атрибута disabled у submit.
      * @param {boolean} disabled
      */
     setSubmitDisabled: function(disabled) {
@@ -129,7 +134,6 @@ define([
     },
 
     /**
-     * Получение review.
      * @return {Element} review
      */
     getReview: function() {
@@ -137,7 +141,6 @@ define([
     },
 
     /**
-     * Получение элемента имени пользователя.
      * @return {Element} username
      */
     getUsername: function() {
@@ -145,7 +148,6 @@ define([
     },
 
     /**
-     * Установка имени пользователя.
      * @param {string} username
      */
     setUsername: function(username) {
@@ -165,17 +167,19 @@ define([
      * @return {number} mark
      */
     setCurrentMark: function() {
+      var radios = this.getRadios();
 
       // Если оценка меньше 3, поле отзыва становится обязательным.
       // Если оно не заполнено, то ставим disabled на submit.
-      for (var i = 0; i < this.getRadios().length; i++) {
-        if (this.getRadios()[i].checked) {
-          this.radios.current = this.getRadios()[i].value;
+      for (var i = 0; i < radios.length; i++) {
+        if (radios[i].checked) {
+          this.radios.current = radios[i].value;
           break;
         }
       }
 
-      this.formValidation(); // После установки текущей радиокнопки производится валидация полей.
+      // После установки текущей радиокнопки производится валидация полей.
+      this.formValidation();
     },
 
     /**
@@ -183,37 +187,38 @@ define([
      * @return {number}
      */
     formValidation: function() {
-
       var result = 0;
       var currentMark = this.getCurrentMark();
       var radio = this.getRadios()[0];
 
       if (currentMark === 0) {
-
         // Оценка не поставлена, выводится сообщение о необходимости
         // проставления оценки.
         this.createErrorNode('Поставьте оценку', radio);
         this.setSubmitDisabled(true);
+
       } else if (currentMark <= (this.getLimitReview() - 1)) {
-        // Удаление сообщения при непоставленной оценке
+        // Удаление сообщения при непоставленной оценке.
         this.removeErrorNode(radio);
         // Поле 'отзыв' становится обязательным, если оно не заполнено,
-        // ставится disabled на submit (в методе validReview)
+        // ставится disabled на submit (в методе validReview).
         result = this.validReview(true) && this.validUsername();
+
       } else {
         // Используется для удаления осталось заполнить - отзыв,
         // action - false, по умолчанию поле отзыв не обязательное.
         result = this.validUsername();
         // Вызов валидации отзыва
         this.validReview();
+
         if (result) {
           // Если имя заполнено и оценка >= 3, то форму можно отправлять, удаляем disabled.
           this.setSubmitDisabled(false);
         }
+
         // Удаляем ошибки от предыдущих вызовов, если они есть.
         this.removeErrorNode(this.getReview());
         this.removeErrorNode(radio);
-
       }
 
       return result;
@@ -230,22 +235,15 @@ define([
     /**
      * Изменение значений элементов в 'осталось заполнить'.
      * @param {string} currentField
-     * @param {boolean} action
+     * @param {boolean=} action
      * action - при true скрываем элемент, иначе отображаем.
      */
     checkControlList: function(currentField, action) {
-
       var controlList = this.getControlList();
-      var currentControl; // Получение текущего контрола.
-
-      switch (currentField) {
-        case 'username':
-          currentControl = controlList.getElementsByClassName('review-fields-name')[0];
-          break;
-        case 'review':
-          currentControl = controlList.getElementsByClassName('review-fields-text')[0];
-          break;
-      }
+      // Получение текущего контрола.
+      var currentControl = currentField === 'username'
+        ? controlList.getElementsByClassName('review-fields-name')[0]
+        : controlList.getElementsByClassName('review-fields-text')[0];
 
       toggleClass(currentControl, 'invisible', action); // Изменение статуса текущего элемента.
 
@@ -260,10 +258,10 @@ define([
       if (countHiddenElements === countAllControls) {
         toggleClass(controlList, 'invisible', true);
         this.setSubmitDisabled(false); // Удаление disabled из сабмита в случае заполнения формы.
+
       } else {
         toggleClass(controlList, 'invisible');
       }
-
     },
 
     /**
@@ -309,22 +307,20 @@ define([
       var currentField = 'username';
 
       if (!checkRequiredField(this.getUsername())) {
-
         this.setSubmitDisabled(true);
         // Вывод 'осталось заполнить - имя',
         // если оно скрыто.
         this.checkControlList(currentField, false);
         this.createErrorNode('Введите имя пользователя!', this.getUsername());  // Вывод сообщения с ошибкой.
         return false;
+
       } else {
         this.checkControlList(currentField, true);  // Удаление 'осталось заполнить имя' (display: none).
         this.removeErrorNode(this.getUsername());
         if (this.getCurrentMark() >= this.getLimitReview()) {
           this.setSubmitDisabled(false);
         }
-
         return true;
-
       }
     },
 
@@ -333,11 +329,9 @@ define([
      * @param {boolean=} action - нужно ли проверять на обязательность.
      */
     validReview: function(action) {
-
       var currentField = 'review';
 
       if (!checkRequiredField(this.getReview())) {
-
         if (action) { // Если поле обязательно, запрещаем сабмит, выводим ошибку.
           this.setSubmitDisabled(true);
           this.createErrorNode('Отзыв обязателен при оценке < 3!', this.getReview());
@@ -348,11 +342,9 @@ define([
         return false;
 
       } else {
-
         this.checkControlList(currentField, true); // Удаление 'осталось заполнить отзыв' (display: none).
         this.removeErrorNode(this.getReview());
         return true;
-
       }
     }
 
@@ -362,13 +354,13 @@ define([
 
   var controlList = document.querySelector('.review-fields');
 
-  var submit = document.querySelector('.review-form-controls').getElementsByClassName('review-submit')[0];
+  var submit = document.querySelector('.review-form-controls .review-submit');
 
   var radios = document.getElementsByName('review-mark');
 
-  var username = document.getElementById('review-name');
+  var username = document.querySelector('#review-name');
 
-  var review = document.getElementById('review-text');
+  var review = document.querySelector('#review-text');
 
   var reviewForm = new Form(form, controlList, submit, radios, username, review);
 
@@ -376,36 +368,30 @@ define([
    * При изменении данных в поле ввода имени
    * вызывается валидация этого поля.
    */
-  reviewForm.getUsername().onchange = function() {
-    reviewForm.validUsername();
-  };
+  reviewForm.getUsername().onchange = reviewForm.validUsername;
 
   /**
    * При изменении данных в поле ввода отзыва
    * вызывается валидация формы.
    */
-  reviewForm.getReview().onchange = function() {
-    reviewForm.formValidation();
-  };
+  reviewForm.getReview().onchange = reviewForm.formValidation;
 
   /**
    * На каждую радиокнопку навешивается обработчик события изменения,
    * устанавливающий текущую оценку игры пользоавтелем.
    */
-  Array.prototype.forEach.call(reviewForm.getRadios(), function(radio) {
+  Array.prototype.forEach.call(radios, function(radio) {
     radio.onchange = reviewForm.setCurrentMark;
   });
 
   // На сабмит - проверка ввода имени пользователя.
   // Проверка текущей оценки игры, при отсутствии заданной оценки просит задать.
   reviewForm.form.onsubmit = function(e) {
-
     e.preventDefault();
     if (reviewForm.formValidation()) { // Оценка задана, имя не пустое, отзыв обязателен при оценке меньше 3.
       setCookies(username.value, reviewForm.getCurrentMark());
       this.submit(); // Валидация прошла успешно, форма отправляется на сервер.
     }
-
   };
 
 });

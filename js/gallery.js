@@ -120,30 +120,31 @@ define([
       return this._nextButton;
     },
 
-    /** Показывает галерею. */
     show: function() {
-
       toggleClass(this.getElement(), 'invisible');
-      document.addEventListener('click', this._onCloseClick); // Установка слушателя кликов на крестике.
+      // Установка слушателя кликов на крестике.
+      document.addEventListener('click', this._onCloseClick);
+
       // Установка слушатели событий на клики по контролам.
       this._getPrevButton().addEventListener('click', this._onPrevButtonPress);
       this._getNextButton().addEventListener('click', this._onNextButtonPress);
-      document.addEventListener('keydown', this._onDocumentKeyDown);  // Обработка нажатий на клавиши.
 
+      // Обработка нажатий на клавиши.
+      document.addEventListener('keydown', this._onDocumentKeyDown);
     },
 
-    /** Прячет галерею. */
     hide: function() {
-
       toggleClass(this.getElement(), 'invisible', true);
-      document.removeEventListener('click', this._onCloseClick);  // Удаление слушателя событий с крестика.
+      // Удаление слушателя событий с крестика.
+      document.removeEventListener('click', this._onCloseClick);
+
       // Удаление слушателей событий кликов по контролам.
       this._getPrevButton().removeEventListener('click', this._onPrevButtonPress);
       this._getNextButton().removeEventListener('click', this._onNextButtonPress);
       document.removeEventListener('keydown', this._onDocumentKeyDown);
 
-      history.pushState('', document.title, window.location.pathname);  // Очистка хэша адресной строки.
-
+      // Очистка хэша адресной строки.
+      history.pushState('', document.title, window.location.pathname);
     },
 
     /**
@@ -153,7 +154,7 @@ define([
     _onCloseClick: function(e) {
       // По клику на document галерея закрывается, если этот элемент не принадлежит самой галерее.
       // По клику на крестик галерея также закрывается.
-      if (!(e.target === this._getCloseButton())) {
+      if (e.target !== this._getCloseButton()) {
         if (this.contains(this.getElement(), e.target)) {
           return false;
         }
@@ -162,25 +163,22 @@ define([
     },
 
     /**
-     * Обработка событий нажатия на клавиши
+     * Обработка событий нажатия на клавиши.
      * @param {KeyboardEvent} e
      * @private
      */
     _onDocumentKeyDown: function(e) {
       switch (e.keyCode) {
-        // escape
-        case 27:
+        case 27:  // Escape.
           this.hide();
           break;
-        // правая стрелка
-        case 39:
+
+        case 39: // Правая стрелка.
           this._onNextButtonPress();
           break;
-        // левая стрелка
-        case 37:
+
+        case 37: // Левая стрелка.
           this._onPrevButtonPress();
-          break;
-        default:
           break;
       }
     },
@@ -195,11 +193,12 @@ define([
     contains: function(container, element) {
       if (container === element) {
         return true;
+
       } else if (element.parentNode) {
         return this.contains(container, element.parentNode);
-      } else {
-        return false;
       }
+
+      return false;
     },
 
     /**
@@ -221,6 +220,7 @@ define([
     _onNextButtonPress: function() {
       var currentPicture = this._getCurrentImageNumber();
       var pictures = this.getPictures();
+
       // Если номер следующей фотографии меньше, чем длина массива
       // pictures, уменьшенная на 1, показываем следующую фотографию.
       if (currentPicture < pictures.length - 1) {
@@ -259,20 +259,17 @@ define([
       // Если передана строка, то нужно найти фотографию или видео, соответствующие
       // этому адресу в массиве фотографий и видео.
       if (typeof currentPhoto === 'string') {
-
         for (var i = 0; i < pictures.length; i++) { // Вычисление соответствующего элемента массива.
           if (getRelativeUrl(pictures[i].getUrl()) === currentPhoto) {
             currentPhoto = i;
             break;
           }
         }
-
       }
 
       // Показываем фотографию, если она находится в массиве фотографий и видео,
       // иначе закрываем галерею.
       if (currentPhoto >= 0 && currentPhoto < pictures.length && typeof currentPhoto === 'number') {
-
         // Установка номера текущей фотографии.
         this._setCurrentImageNumber(currentPhoto);
         this._renderPicture(currentPhoto);
@@ -291,7 +288,6 @@ define([
      * @private
      */
     _renderPicture: function(currentPhoto) {
-
       var container = this._getPhotoContainer();
       var pictures = this.getPictures();
 
@@ -318,14 +314,17 @@ define([
       if (pictures[currentPhoto] instanceof Video) {
         var video = document.createElement('video');
         var sourceMP4 = document.createElement('source');
+
         sourceMP4.type = 'video/mp4';
         sourceMP4.src = pictures[currentPhoto].getUrl();
         video.autoplay = true;
         video.loop = true;
         video.appendChild(sourceMP4);
+
         // По клике на видео оно будет останавливаться или запускаться.
         document.addEventListener('click', this.togglePlayVideo);
         container.appendChild(video);
+
       } else {
         var photo = new Image();
         photo.src = pictures[currentPhoto].getUrl();
@@ -334,7 +333,6 @@ define([
 
       // Обновление блока .preview-number-current.
       this._getPreviewNumberCurrent().textContent = (currentPhoto + 1).toString();
-
     },
 
     /**
@@ -342,7 +340,6 @@ define([
      * @param {MouseEvent} e
      */
     togglePlayVideo: function(e) {
-      console.log(this);
       if (e.target.tagName === 'VIDEO') {
         return e.target.paused ? e.target.play() : e.target.pause();
       }
@@ -363,10 +360,12 @@ define([
      */
     restoreFromHash: function() {
       var photo = location.hash.match(/#photo\/(\S+)/);
+
       if (photo) {
         photo = photo[1].indexOf('/') === 0 ? photo[1] : '/' + photo[1];
         this.show();
         this.setCurrentPicture(photo);
+
       } else {
         this.hide();
       }
@@ -383,7 +382,4 @@ define([
   };
 
   return Gallery;
-
 });
-
-

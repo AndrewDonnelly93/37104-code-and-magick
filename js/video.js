@@ -17,7 +17,6 @@ define([
     Photo.call(this, url);
   }
 
-  /** Video объявляется наследником Photo. */
   inherit(Video, Photo);
 
   return Video;
