@@ -58,59 +58,42 @@ define([
       return this.renderedReviews;
     },
 
-    /** Получение контейнера. */
+    // Получение контейнера.
     getContainer: function() {
       return this.container;
     },
 
-    /** Получение списка отзывов по AJAX. */
+    // Получение списка отзывов по AJAX.
     getReviewsByAJAX: function() {
-
       var container = this.getContainer();
       var xhr = new XMLHttpRequest();
       xhr.open('GET', 'data/reviews.json');
       xhr.timeout = 15000;
 
-      /**
-       * Обработка списка отзывов в случае зависания сервера.
-       * К reviews добавляется класс review-load-failure.
-       */
+      // Обработка списка отзывов в случае зависания сервера.
+      // К reviews добавляется класс review-load-failure.
       xhr.ontimeout = (function() {
         this._xhrError();
       }).bind(this);
 
-      /**
-       * Пока длится загрузка файла, к reviews добавлятся класс
-       * reviews-list-loading.
-       */
-      xhr.onreadystatechange = (function() {
-
-        if (xhr.readyState < 4) {
-          toggleClass(container, 'invisible', true);
-          toggleClass(container.parentElement, 'reviews-list-loading', true);
-        } else if (xhr.readyState === 4) {
-          return xhr.status === 200 ?
-            this._xhrSuccess() : toggleClass(container.parentElement, 'reviews-list-loading');
+      // Пока длится загрузка файла, к reviews добавлятся класс
+      // reviews-list-loading.
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+          toggleClass(container.parentElement, 'reviews-list-loading');
         }
+      };
 
-      }).bind(this);
+      // При ошибке в процессе загрузки отзыву добавляется класс
+      // review-load-failure.
+      xhr.onerror = this._xhrError.bind(this);
 
-      /**
-       * При ошибке в процессе загрузки отзыву добавляется класс
-       * review-load-failure.
-       */
-      xhr.onerror = (function() {
-        this._xhrError();
-      }).bind(this);
+      // После загрузки данных по AJAX список отзывов записывается
+      // в прототип ReviewsList.
+      xhr.onload = this._xhrSuccess.bind(this);
 
-      /**
-       * После загрузки данных по AJAX список отзывов записывается
-       * в прототип ReviewsList.
-       */
-      xhr.onload = (function(e) {
-        this._xhrSuccess();
-        this.setReviews(JSON.parse(e.target.response));
-      }).bind(this);
+      toggleClass(container, 'invisible', true);
+      toggleClass(container.parentElement, 'reviews-list-loading', true);
 
       xhr.send();
     },
@@ -131,19 +114,20 @@ define([
      * Обработка данных при успешном выполнении XHR.
      * @private
      */
-    _xhrSuccess: function() {
+    _xhrSuccess: function(e) {
       var container = this.getContainer();
       toggleClass(container, 'invisible');
       toggleClass(container.parentElement, 'reviews-list-loading');
       toggleClass(container.parentElement, 'review-load-failure');
+      this.setReviews(JSON.parse(e.target.response));
     },
 
-    /** Получение списка фильтров. */
+    // Получение списка фильтров.
     getFilters: function() {
       return this.filter.all;
     },
 
-    /** Получение активного фильтра. */
+    // Получение активного фильтра.
     getActiveFilter: function() {
       return this.filter.active;
     },
@@ -156,17 +140,17 @@ define([
       this.filter.active = filter;
     },
 
-    /** Получение текущей страницы. */
+    // Получение текущей страницы.
     getCurrentPage: function() {
       return this.pages.current;
     },
 
-    /** Получение количества отзывов на странице. */
+    // Получение количества отзывов на странице.
     getPageSize: function() {
       return this.pages.PAGE_SIZE;
     },
 
-    /** Получение списка отфильтрованных отзывов. */
+    // Получение списка отфильтрованных отзывов.
     getFilteredReviews: function() {
       return this.filteredReviews;
     },
@@ -179,32 +163,27 @@ define([
       this.filteredReviews = reviews;
     },
 
-    /** Получение кнопки 'еще отзывы'. */
+    // Получение кнопки 'еще отзывы'.
     getMore: function() {
       return this.more;
     },
 
-    /** Установка обработчика событий по клику на кнопку 'еще отзывы'. */
+    // Установка обработчика событий по клику на кнопку 'еще отзывы'.
     showMoreReviews: function() {
       var getMoreBtn = this.getMore();
-
       getMoreBtn.addEventListener('click', (function() {
         var currentPage = this.getCurrentPage();
+
         // Для отображения следующей порции отзывов нужно посмотреть, есть ли они.
         // Страницы нумеруются с 0, поэтому вычитаем из потолка единицу.
         var pageCount = (Math.ceil(this.getFilteredReviews().length / this.getPageSize())) - 1;
 
         if (currentPage < pageCount) {
-          // Предпоследняя страница
-          if (currentPage === (pageCount - 1)) {
-            toggleClass(getMoreBtn, 'invisible', true);
-          } else {
-            toggleClass(getMoreBtn, 'invisible', false);
-          }
+          // Предпоследняя страница.
+          toggleClass(getMoreBtn, 'invisible', currentPage === (pageCount - 1));
           this.setCurrentPage(currentPage + 1);
           this.renderReviews();
         }
-
       }).bind(this));
     },
 
@@ -216,7 +195,7 @@ define([
       this.pages.current = page;
     },
 
-    /** Установка обработчика событий по клику на список фильтров. */
+    // Установка обработчика событий по клику на список фильтров.
     setCurrentFilter: function() {
       this.getFilters().addEventListener('click', (function(e) {
         var clickedElement = e.target;
@@ -226,7 +205,7 @@ define([
       }).bind(this));
     },
 
-    /** Установка значения reviews у объекта, вызов рендеринга списка отзывов. */
+    // Установка значения reviews у объекта, вызов рендеринга списка отзывов.
     setReviews: function(reviews) {
       this.reviews = reviews.map(function(review) {
         return new Review(review);
@@ -234,7 +213,7 @@ define([
       this.filterReviews(this.getActiveFilter(), true);
     },
 
-    /** Получение списка отзывов. */
+    // Получение списка отзывов.
     getReviews: function() {
       return this.reviews;
     },
@@ -246,7 +225,6 @@ define([
      *     на повторное присвоение фильтра.
      */
     filterReviews: function(id, force) {
-
       if (this.getActiveFilter() === id && !force) {
         return;
       }
@@ -254,13 +232,11 @@ define([
       var filteredReviews = this.getReviews().slice(0);
 
       switch (id) {
-
-        case 'reviews-recent':  // Выборка отзывов за прошедшие полгода.
-          var currentDate = new Date();
+        case 'reviews-recent':
+          // Выборка отзывов за прошедшие полгода.
           var DAYS_TO_EXPIRE = 180;
-          var dateToExpire = DAYS_TO_EXPIRE * 24 * 3600 * 1000;
           filteredReviews = filteredReviews.filter(function(review) {
-            return (currentDate - Date.parse(review.getDate()) <= dateToExpire);
+            return (new Date() - Date.parse(review.getDate()) <= DAYS_TO_EXPIRE * 24 * 3600 * 1000);
           });
           filteredReviews.sort(function(a, b) {
             return new Date(b.getDate()) - new Date(a.getDate());
@@ -306,7 +282,8 @@ define([
       this.renderReviews(true);
       this.setActiveFilter(id);
       document.querySelector('#' + id).checked = true;
-      localStorage.setItem('activeFilter', id);  // Установка активного фильтра в localStorage.
+      // Установка активного фильтра в localStorage.
+      localStorage.setItem('activeFilter', id);
     },
 
     /**
@@ -349,15 +326,12 @@ define([
       ));
 
       container.appendChild(tempContainer);
-      toggleClass(this.getFilters(), 'invisible');  // Показывает фильтры у отзывов после загрузки списка отзывов.
+      // Показывает фильтры у отзывов после загрузки списка отзывов.
+      toggleClass(this.getFilters(), 'invisible');
     }
 
   };
 
-  /**
-   * Создание нового объекта - списка отзывов.
-   * @type {ReviewsList}
-   */
   var reviewList = new ReviewsList(document.querySelector('.reviews-filter'),
   document.querySelector('.reviews-list'), document.querySelector('.reviews-controls-more'));
 

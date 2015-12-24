@@ -2,7 +2,7 @@
 
 define(function() {
 
-  /** Задает инициализацию скролла. */
+  // Задает инициализацию скролла.
   function scrollDetecting() {
     var scrollTimeout;
     var SCROLL_TIMEOUT = 100;
@@ -15,19 +15,20 @@ define(function() {
       }
 
       scrollTimeout = setTimeout(function() {
-        // Если блок с игрой не виден в данный момент, то игра
-        // ставится на паузу
         var demoCoords = demo.getBoundingClientRect();
-        if (!(demoCoords.top < window.innerHeight && demoCoords.bottom >= 0)) {
+
+        // Если блок с игрой не виден в данный момент, то игра
+        // ставится на паузу.
+        if (demoCoords.top > window.innerHeight && demoCoords.bottom < 0) {
           game.setGameStatus(window.Game.Verdict.PAUSE);
         }
+
         // Координаты фона меняются только в том случае, если блок с облаками
-        // виден на странице
+        // виден на странице.
         if (clouds.getBoundingClientRect().bottom >= 0) {
           clouds.style.backgroundPosition = -2 * document.body.scrollTop + 'px top';
         }
       }, SCROLL_TIMEOUT);
-
     });
   }
 
@@ -386,13 +387,13 @@ define(function() {
 
     /**
      * Обработчик событий клавиатуры во время паузы.
-     * @param {KeyboardEvent} evt
+     * @param {KeyboardEvent} e
      * @private
      * @private
      */
-    _pauseListener: function(evt) {
-      if (evt.keyCode === 32) {
-        evt.preventDefault();
+    _pauseListener: function(e) {
+      if (e.keyCode === 32) {
+        e.preventDefault();
         var needToRestartTheGame = this.state.currentStatus === Verdict.WIN ||
             this.state.currentStatus === Verdict.FAIL;
         this.initializeLevelAndStart(this.level, needToRestartTheGame);
@@ -444,19 +445,19 @@ define(function() {
       };
 
       for (var i = 0; i < text.length; i++) {
-
         var testLine = line + text[i] + ' ';
         var testWidth = this.ctx.measureText(testLine).width;
+
         // Если длина строки с новым словом превышает установленную длину сообщения,
         // строка сохраняется в массив без нового слова, с него начинается новая строка.
         if (testWidth > MESSAGE_WIDTH) {
           messageAsArray.message.push(line);
           messageAsArray.messageHeight += LINE_HEIGHT;
           line = text[i] + ' ';
+
         } else {
           line = testLine;
         }
-
       }
 
       messageAsArray.message.push(line.slice(0, line.length - 1)); // Добавление последней строки.
@@ -479,6 +480,7 @@ define(function() {
         rectangleHeight: 0
       };
       rectangleData.rectangleHeight = VERTICAL_MESSAGE_OFFSET + messageHeight;
+
       if ((this.canvas.height - rectangleData.rectangleHeight) > 0) {
         rectangleData.rectangleY = 0.5 * (this.canvas.height - rectangleData.rectangleHeight - 0.5 * OFFSET_LINE);
       }
@@ -518,12 +520,12 @@ define(function() {
       var HORIZONTAL_MESSAGE_OFFSET = 45;
       var MESSAGE_WIDTH = RECTANGLE_WIDTH - HORIZONTAL_MESSAGE_OFFSET;
 
-      // Задание стиля для сообшения
+      // Задание стиля для сообшения.
       var FONT_SIZE = 16;
       var FONT_FAMILY = 'PT Mono';
       var LINE_HEIGHT = FONT_SIZE * 1.2;
 
-      // Получение сообщения в виде массива строк, подогнанных под ширину
+      // Получение сообщения в виде массива строк, подогнанных под ширину.
       // прямоугольника
       var messageAsArray = this._getMessage(msg, MESSAGE_WIDTH, LINE_HEIGHT, FONT_SIZE, FONT_FAMILY);
 
@@ -534,19 +536,20 @@ define(function() {
       var rectangleHeight = rectangleData.rectangleHeight;
       var rectangleY = rectangleData.rectangleY;
 
-      // Отрисовка прямоугольника и его тени
+      // Отрисовка прямоугольника и его тени.
       var OFFSET_RECTANGLE_SHADOW = 10;
       var RECTANGLE_BG = '#fff';
       var RECTANGLE_SHADOW_BG = 'rgba(0, 0, 0, 0.7)';
-      // Координата начала фигуры (треугольника - дополнения к прямоугольнику и самого прямоугольника)
+      // Координата начала фигуры (треугольника - дополнения к прямоугольнику и самого прямоугольника).
       var rectangleX = 0.5 * (this.canvas.width - RECTANGLE_WIDTH - 0.5 * OFFSET_LINE);
-      // Рисуем тень прямоугольника
+
+      // Рисуем тень прямоугольника.
       this._drawRectangleCanvas(rectangleX + OFFSET_RECTANGLE_SHADOW, rectangleY + OFFSET_RECTANGLE_SHADOW, OFFSET_LINE,
         RECTANGLE_WIDTH, rectangleHeight, RECTANGLE_SHADOW_BG);
       // Рисуем сам прямоугольник
       this._drawRectangleCanvas(rectangleX, rectangleY, OFFSET_LINE, RECTANGLE_WIDTH, rectangleHeight, RECTANGLE_BG);
 
-      // Вывод текста сообщения в прямоугольнике
+      // Вывод текста сообщения в прямоугольнике.
       var messageX = rectangleX + HORIZONTAL_MESSAGE_OFFSET;
       var messageY = rectangleY + VERTICAL_MESSAGE_OFFSET;
       this.ctx.fillStyle = RECTANGLE_SHADOW_BG;
@@ -563,12 +566,15 @@ define(function() {
         case Verdict.WIN:
           msg = 'Вы победили в игре!';
           break;
+
         case Verdict.FAIL:
           msg = 'Вы проиграли. В следующий раз вам повезет больше.';
           break;
+
         case Verdict.PAUSE:
           msg = 'Игра поставлена на паузу. Для возобновления нажмите пробел.';
           break;
+
         case Verdict.INTRO:
           msg = 'Нажмите пробел для начала игры. ' +
           'Движение управляется стрелками, а для стрельбы файерболами используется SHIFT.';
@@ -799,11 +805,11 @@ define(function() {
     },
 
     /**
-     * @param {KeyboardEvent} evt [description]
+     * @param {KeyboardEvent} e [description]
      * @private
      */
-    _onKeyDown: function(evt) {
-      switch (evt.keyCode) {
+    _onKeyDown: function(e) {
+      switch (e.keyCode) {
         case 37:
           this.state.keysPressed.LEFT = true;
           break;
@@ -818,17 +824,17 @@ define(function() {
           break;
       }
 
-      if (evt.shiftKey) {
+      if (e.shiftKey) {
         this.state.keysPressed.SHIFT = true;
       }
     },
 
     /**
-     * @param {KeyboardEvent} evt [description]
+     * @param {KeyboardEvent} e [description]
      * @private
      */
-    _onKeyUp: function(evt) {
-      switch (evt.keyCode) {
+    _onKeyUp: function(e) {
+      switch (e.keyCode) {
         case 37:
           this.state.keysPressed.LEFT = false;
           break;
@@ -843,7 +849,7 @@ define(function() {
           break;
       }
 
-      if (evt.shiftKey) {
+      if (e.shiftKey) {
         this.state.keysPressed.SHIFT = false;
       }
     },

@@ -14,6 +14,7 @@ define(function() {
     if (action && element.className.indexOf(className) === -1) {
       element.className = !element.className.length ? className :
       element.className + ' ' + className;
+
     } else if (!action && element.className.indexOf(className) !== -1) {
       var classList = element.className.split(' ');
       classList.splice(classList.indexOf(className), 1);
